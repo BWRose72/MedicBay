@@ -1,0 +1,5 @@
+cd C:\Users\BWRose\dev\mariadb
+.\bin\mariadbd.exe --console
+
+php artisan db:seed --class=RoleSeeder
+php artisan permission:cache-reset
