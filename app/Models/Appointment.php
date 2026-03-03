@@ -2,13 +2,13 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Carbon;
 use App\Enums\AppointmentStatus;
 use DomainException;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 class Appointment extends Model
 {
@@ -30,13 +30,12 @@ class Appointment extends Model
         'status',
     ];
 
-
     protected $casts = [
         'start_time' => 'datetime',
         'status' => AppointmentStatus::class,
     ];
-    
-    //Relationsips
+
+    // Relationsips
     public function doctor(): BelongsTo
     {
         return $this->belongsTo(Doctor::class, 'doctor_id');
@@ -46,8 +45,8 @@ class Appointment extends Model
     {
         return $this->belongsTo(Patient::class, 'patient_id');
     }
-    
-    //Accessors
+
+    // Accessors
     public function getEndsAtAttribute(): Carbon
     {
         return $this->start_time->copy()->addMinutes(30);
@@ -63,7 +62,7 @@ class Appointment extends Model
         return $this->start_time->isFuture();
     }
 
-    //scopes
+    // scopes
     public function scopeUpcoming(Builder $query): Builder
     {
         return $query->where('start_time', '>', now());

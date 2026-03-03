@@ -16,6 +16,7 @@ defineOptions({
 </script>
 
 <template>
+
     <Head title="MedicBay" />
 
     <div class="min-h-screen text-slate-900">
@@ -28,7 +29,7 @@ defineOptions({
                 <section class="relative overflow-hidden">
                     <div class="container-main section-spacing">
                         <!-- Green box behind hero+label -->
-                        <div class="rounded-3xl bg-primary/75 p-6 sm:p-10">
+                        <div class="rounded-3xl bg-primary/65 p-6 sm:p-10">
                             <div class="grid items-center gap-10 lg:grid-cols-2">
                                 <!-- Left: slogan/label -->
                                 <div class="text-center lg:text-left">
@@ -37,13 +38,15 @@ defineOptions({
                                     </h1>
 
                                     <p class="mx-auto mt-4 max-w-xl text-base leading-7 text-foreground/80 lg:mx-0">
-                                        MedicBay helps patients and clinicians manage appointments and workflows efficiently.
+                                        MedicBay helps patients and clinicians manage appointments and workflows
+                                        efficiently.
                                     </p>
                                 </div>
 
                                 <!-- Right: hero image -->
                                 <div class="overflow-hidden rounded-2xl">
-                                    <img src="/images/hero.jpg" alt="MedicBay hero" class="h-[360px] w-full object-cover sm:h-[420px]" />
+                                    <img src="/images/hero.jpg" alt="MedicBay hero"
+                                        class="h-[360px] w-full object-cover sm:h-[420px]" />
                                 </div>
                             </div>
                         </div>
@@ -66,7 +69,7 @@ defineOptions({
                         </p>
 
                         <div class="mt-6">
-                            <Link href="/appointments/create" class="btn-primary">
+                            <Link :href="$page.props.auth.user ? '/dashboard' : '/login'" class="btn-primary">
                                 Make an appointment
                             </Link>
                         </div>

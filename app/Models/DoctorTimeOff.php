@@ -2,11 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
-use Ramsey\Uuid\Type\Time;
 
 class DoctorTimeOff extends Model
 {
@@ -28,16 +27,16 @@ class DoctorTimeOff extends Model
 
     protected $casts = [
         'start_time' => 'datetime',
-        'end_time'   => 'datetime',
+        'end_time' => 'datetime',
     ];
 
-    //Relationships
+    // Relationships
     public function doctor(): BelongsTo
     {
         return $this->belongsTo(Doctor::class, 'doctor_id');
     }
 
-    //accessors
+    // accessors
     public function isActiveAt(Carbon $time): bool
     {
         return $time->between($this->start_time, $this->end_time);

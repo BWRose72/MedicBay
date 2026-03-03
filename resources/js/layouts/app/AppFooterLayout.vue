@@ -17,7 +17,7 @@ import { Link } from '@inertiajs/vue3';
                     </div>
 
                     <div class="flex flex-col gap-2">
-                        <p class="font-semibold text-foreground">Links</p>
+                        <p class="font-semibold text-foreground"></p>
                         <div class="flex flex-col gap-2 sm:flex-row sm:gap-4">
                             <Link href="/about" class="hover:text-foreground">About</Link>
                             <Link href="/doctors" class="hover:text-foreground">Doctors</Link>
@@ -28,7 +28,7 @@ import { Link } from '@inertiajs/vue3';
 
                     <div class="flex flex-col gap-2">
                         <p class="font-semibold text-foreground">Contact Us</p>
-                        <p>123 Wellness Avenue, Sofia 1000, Bulgaria</p>
+                        <p>123 Wellness Avenue, Razgrad 1000, Bulgaria</p>
                         <p>Phone: +359 2 123 4567</p>
                     </div>
                 </div>

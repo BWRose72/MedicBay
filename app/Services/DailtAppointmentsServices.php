@@ -16,7 +16,7 @@ final class DailyAppointmentsServices
 {
     public function upcomingForDoctor(User $actor, int $doctorId): Collection
     {
-        if (!$actor->can('doctor')) {
+        if (! $actor->can('doctor')) {
             throw new AuthorizationException('Only doctors (or admins) can see upcoming doctor appointments.');
         }
 
@@ -49,7 +49,7 @@ final class DailyAppointmentsServices
 
     public function forDoctorOnDate(User $actor, int $doctorId, CarbonImmutable $date): Collection
     {
-        if (!$actor->can('doctor')) {
+        if (! $actor->can('doctor')) {
             throw new AuthorizationException('Only doctors (or admins) can see doctor\'s daily appointments.');
         }
 

@@ -48,11 +48,11 @@ final class DoctorScheduleService
             ->where(function ($q) use ($dayStart, $dayEnd) {
                 // Overlap with the day
                 $q->whereBetween('start_time', [$dayStart, $dayEnd])
-                  ->orWhereBetween('end_time', [$dayStart, $dayEnd])
-                  ->orWhere(function ($qq) use ($dayStart, $dayEnd) {
-                      $qq->where('start_time', '<=', $dayStart)
-                         ->where('end_time', '>=', $dayEnd);
-                  });
+                    ->orWhereBetween('end_time', [$dayStart, $dayEnd])
+                    ->orWhere(function ($qq) use ($dayStart, $dayEnd) {
+                        $qq->where('start_time', '<=', $dayStart)
+                            ->where('end_time', '>=', $dayEnd);
+                    });
             })
             ->get();
 
@@ -74,7 +74,7 @@ final class DoctorScheduleService
 
                 $free->push([
                     'start' => $slot['start']->format('Y-m-d H:i:s'),
-                    'end'   => $slot['end']->format('Y-m-d H:i:s'),
+                    'end' => $slot['end']->format('Y-m-d H:i:s'),
                 ]);
             }
         }
@@ -84,7 +84,7 @@ final class DoctorScheduleService
 
     public function bookSlot(User $actor, int $doctorId, CarbonImmutable $slotStart): Appointment
     {
-        if (!$actor->can('schedule.book')) {
+        if (! $actor->can('schedule.book')) {
             throw new AuthorizationException('Only patients (or admins) can book appointments.');
         }
 
@@ -119,11 +119,11 @@ final class DoctorScheduleService
             }
 
             return Appointment::create([
-                'doctor_id'        => (int) $doctor->doctor_id,
-                'patient_id'       => (int) $patient->patient_id,
-                'start_time'       => $slotStart,
-                'has_left_review'  => false,
-                'status'           => AppointmentStatus::Scheduled,
+                'doctor_id' => (int) $doctor->doctor_id,
+                'patient_id' => (int) $patient->patient_id,
+                'start_time' => $slotStart,
+                'has_left_review' => false,
+                'status' => AppointmentStatus::Scheduled,
             ]);
         });
     }
@@ -179,7 +179,7 @@ final class DoctorScheduleService
     private function isSlotInsideTimeOff(CarbonImmutable $slotStart, CarbonImmutable $slotEnd, Collection $timeOffs): bool
     {
         foreach ($timeOffs as $dto) {
-            ///** @var DoctorTimeOff $to */
+            // /** @var DoctorTimeOff $to */
             $toStart = CarbonImmutable::parse($dto->start_time);
             $toEnd = CarbonImmutable::parse($dto->end_time);
 

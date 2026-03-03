@@ -3,8 +3,8 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class RoleSeeder extends Seeder
 {
@@ -27,6 +27,7 @@ class RoleSeeder extends Seeder
             'schedule.book',
             'review.view',
             'review.leave',
+            'admin_doctor',
         ];
 
         foreach ($permissions as $permission) {

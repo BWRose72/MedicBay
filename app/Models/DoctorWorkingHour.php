@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
@@ -11,7 +11,7 @@ class DoctorWorkingHour extends Model
 {
     use HasFactory;
 
-    protected $table = 'doctor_working_hours';
+    protected $table = 'doctor_working_hour';
 
     protected $primaryKey = 'id';
 
@@ -33,14 +33,14 @@ class DoctorWorkingHour extends Model
         'start_time' => 'datetime:H:i:s',
         'end_time' => 'datetime:H:i:s',
     ];
-    
-    //Relationships
+
+    // Relationships
     public function doctor(): BelongsTo
     {
         return $this->belongsTo(Doctor::class, 'doctor_id');
     }
-    
-    //Acessors
+
+    // Acessors
     /*public function getDurationInMinutesAttribute(): int //leave it here for now
     {
         $start = Carbon::createFromFormat('H:i:s', $this->start_time);
