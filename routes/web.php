@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
+use App\Http\Controllers\DoctorsController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -13,5 +14,7 @@ Route::get('/', function () {
 Route::get('dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::get('/doctors', [DoctorsController::class, 'index'])->name('doctors.index');
 
 require __DIR__.'/settings.php';
