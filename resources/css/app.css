@@ -70,6 +70,7 @@
   color utility to any element that depends on these defaults.
 */
 @layer base {
+
     *,
     ::after,
     ::before,
@@ -80,6 +81,7 @@
 }
 
 @layer utilities {
+
     body,
     html {
         --font-sans:
@@ -108,7 +110,7 @@
     --destructive-foreground: hsl(0 0% 100%);
     --border: hsl(84 40% 85%);
     --input: hsl(84 30% 90%);
-    --ring: hsl(84 94% 41%); 
+    --ring: hsl(84 94% 41%);
     --chart-1: hsl(84 94% 41%);
     --chart-2: hsl(120 87% 29%);
     --chart-3: hsl(90 60% 35%);
@@ -166,6 +168,7 @@
     * {
         @apply border-border outline-ring/50;
     }
+
     body {
         @apply bg-background text-foreground;
     }
@@ -195,9 +198,10 @@
         background: rgba(255, 255, 255, 0.65);
         z-index: 5;
     }
+
     .doctors-scroll {
         min-height: calc(4 * 140px + 3 * 16px);
-        max-height: calc(4 * 120px + 5 * 16px); 
+        max-height: calc(4 * 120px + 5 * 16px);
         overflow-y: auto;
         overscroll-behavior: contain;
         scrollbar-width: none;
@@ -207,6 +211,7 @@
         width: 0;
         height: 0;
     }
+
     .container-main {
         @apply mx-auto max-w-6xl px-4 sm:px-6;
     }

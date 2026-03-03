@@ -17,7 +17,7 @@ final class PatientsAppointments
 {
     public function upcoming(User $actor, int $patientId): Collection
     {
-        if (!$actor->can('patient')) {
+        if (! $actor->can('patient')) {
             throw new AuthorizationException('You are not allowed to perform this action.');
         }
 
@@ -44,10 +44,10 @@ final class PatientsAppointments
             })
             ->values();
     }
-    
+
     public function cancelIfMoreThanTwoHoursRemain(User $actor, int $patientId, int $appointmentId): Appointment
     {
-        if (!$actor->can('patient')) {
+        if (! $actor->can('patient')) {
             throw new AuthorizationException('You are not allowed to perform this action.');
         }
 
@@ -85,10 +85,10 @@ final class PatientsAppointments
 
         return $appointment->refresh();
     }
-    
+
     public function completedUnreviewed(User $actor, int $patientId): Collection
     {
-        if (!$actor->can('patient')) {
+        if (! $actor->can('patient')) {
             throw new AuthorizationException('You are not allowed to perform this action.');
         }
 
@@ -115,5 +115,4 @@ final class PatientsAppointments
             })
             ->values();
     }
-
 }

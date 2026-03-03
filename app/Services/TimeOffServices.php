@@ -23,7 +23,7 @@ final class DoctorTimeOffService
         CarbonImmutable $start,
         CarbonImmutable $end,
     ): DoctorTimeOff {
-        if (!$actor->can('doctor')) {
+        if (! $actor->can('doctor')) {
             throw new AuthorizationException('Only doctors (or admins) can create time off.');
         }
 
@@ -38,9 +38,9 @@ final class DoctorTimeOffService
 
         return DB::transaction(function () use ($doctor, $start, $end) {
             $timeOff = DoctorTimeOff::create([
-                'doctor_id'  => (int) $doctor->doctor_id,
+                'doctor_id' => (int) $doctor->doctor_id,
                 'start_time' => $start,
-                'end_time'   => $end,
+                'end_time' => $end,
             ]);
 
             $this->cancelAndNotifyOverlappingAppointments(
@@ -59,7 +59,7 @@ final class DoctorTimeOffService
         CarbonImmutable $start,
         CarbonImmutable $end,
     ): DoctorTimeOff {
-        if (!$actor->can('doctor')) {
+        if (! $actor->can('doctor')) {
             throw new AuthorizationException('Only doctors (or admins) can update time off.');
         }
 
@@ -91,7 +91,7 @@ final class DoctorTimeOffService
 
     public function deleteTimeOff(User $actor, int $timeOffId): void
     {
-        if (!$actor->can('doctor')) {
+        if (! $actor->can('doctor')) {
             throw new AuthorizationException('Only doctors (or admins) can delete time off.');
         }
 
@@ -99,7 +99,7 @@ final class DoctorTimeOffService
 
         $timeOff->delete();
     }
-    
+
     private function cancelAndNotifyOverlappingAppointments(
         Doctor $doctor,
         CarbonImmutable $start,

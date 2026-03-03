@@ -36,11 +36,11 @@ final class DoctorServices
 
     public function create(User $actor, array $attributes): Doctor
     {
-        if (!$actor->can('doctor.create')) {
+        if (! $actor->can('doctor.create')) {
             throw new AuthorizationException('You are not allowed to perform this action.');
         }
 
-        $doctor = new Doctor();
+        $doctor = new Doctor;
         $doctor->fill($attributes);
         $doctor->save();
 
@@ -49,7 +49,7 @@ final class DoctorServices
 
     public function update(User $actor, int $id, array $attributes): Doctor
     {
-        if (!$actor->can('doctor.update')) {
+        if (! $actor->can('doctor.update')) {
             throw new AuthorizationException('You are not allowed to perform this action.');
         }
 
@@ -62,7 +62,7 @@ final class DoctorServices
 
     public function delete(User $actor, int $id): void
     {
-        if (!$actor->can('doctor')) {
+        if (! $actor->can('doctor')) {
             throw new AuthorizationException('You are not allowed to perform this action.');
         }
 

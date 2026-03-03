@@ -15,13 +15,13 @@ return new class extends Migration
             $table->id('time_off_id');
 
             $table->foreignId('doctor_id')
-            ->constrained('doctors', 'doctor_id')
-            ->cascadeOnDelete();
+                ->constrained('doctors', 'doctor_id')
+                ->cascadeOnDelete();
             $table->time('start_time');
             $table->time('end_time');
 
             $table->timestamps();
-        
+
             $table->index(['doctor_id', 'start_time']);
         });
     }

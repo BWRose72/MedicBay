@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 use App\Models\Doctor;
-use App\Models\Specialisation;
 use App\Models\Patient;
+use App\Models\Specialisation;
+use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -30,7 +30,7 @@ class DatabaseSeeder extends Seeder
             ->count(10)
             ->create([
                 'specialisation_id' => fn () => $specialisationIds->random(),
-        ]);
+            ]);
 
         Patient::factory()
             ->count(10)

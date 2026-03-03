@@ -16,6 +16,7 @@ defineOptions({
 </script>
 
 <template>
+
     <Head title="MedicBay" />
 
     <div class="min-h-screen text-slate-900">
@@ -37,13 +38,15 @@ defineOptions({
                                     </h1>
 
                                     <p class="mx-auto mt-4 max-w-xl text-base leading-7 text-foreground/80 lg:mx-0">
-                                        MedicBay helps patients and clinicians manage appointments and workflows efficiently.
+                                        MedicBay helps patients and clinicians manage appointments and workflows
+                                        efficiently.
                                     </p>
                                 </div>
 
                                 <!-- Right: hero image -->
                                 <div class="overflow-hidden rounded-2xl">
-                                    <img src="/images/hero.jpg" alt="MedicBay hero" class="h-[360px] w-full object-cover sm:h-[420px]" />
+                                    <img src="/images/hero.jpg" alt="MedicBay hero"
+                                        class="h-[360px] w-full object-cover sm:h-[420px]" />
                                 </div>
                             </div>
                         </div>
@@ -66,9 +69,7 @@ defineOptions({
                         </p>
 
                         <div class="mt-6">
-                            <Link 
-                            :href="$page.props.auth.user ? '/dashboard' : '/login'"
-                            class="btn-primary">
+                            <Link :href="$page.props.auth.user ? '/dashboard' : '/login'" class="btn-primary">
                                 Make an appointment
                             </Link>
                         </div>

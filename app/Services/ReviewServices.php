@@ -24,10 +24,9 @@ final class ReviewServices
         int $attitude,
         int $professionalism
     ): Review {
-        if (!$actor->can('review.leave')) {
+        if (! $actor->can('review.leave')) {
             throw new AuthorizationException('Only patients can leave reviews.');
         }
-
 
         $this->assertRatingRange($attitude, 'attitude');
         $this->assertRatingRange($professionalism, 'professionalism');
@@ -91,10 +90,10 @@ final class ReviewServices
             }
 
             $review = Review::create([
-                'patient_id'       => (int) $patient->patient_id,
-                'doctor_id'        => (int) $locked->doctor_id,
-                'attitude'         => $attitude,
-                'professionalism'  => $professionalism,
+                'patient_id' => (int) $patient->patient_id,
+                'doctor_id' => (int) $locked->doctor_id,
+                'attitude' => $attitude,
+                'professionalism' => $professionalism,
             ]);
 
             $locked->has_left_review = true;
@@ -106,7 +105,7 @@ final class ReviewServices
 
     public function adminDoctorReviews(User $actor, int $doctorId): Collection
     {
-        if (!$actor->can('review.view')) {
+        if (! $actor->can('review.view')) {
             throw new AuthorizationException('Only admins can view individual reviews.');
         }
 

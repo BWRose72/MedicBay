@@ -6,10 +6,9 @@ namespace App\Http\Controllers;
 
 use App\Models\DoctorWorkingHour;
 use App\Services\DoctorServices;
+use App\Services\DoctorWorkingHoursServices;
 use App\Services\ReviewServices;
 use App\Services\SpecialisationServices;
-use App\Services\DoctorWorkingHoursService;
-use App\Services\DoctorWorkingHoursServices;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;

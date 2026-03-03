@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Review extends Model
 {
-
     protected $table = 'reviews';
 
     protected $primaryKey = 'review_id';
@@ -23,12 +22,12 @@ class Review extends Model
         'professionalism',
     ];
 
-    //Relationships
+    // Relationships
     public function patient(): BelongsTo
     {
         return $this->belongsTo(Patient::class, 'patient_id');
     }
-    
+
     public function doctor(): BelongsTo
     {
         return $this->belongsTo(Doctor::class, 'doctor_id');

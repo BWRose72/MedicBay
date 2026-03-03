@@ -34,6 +34,7 @@ function initials(name?: string): string {
 </script>
 
 <template>
+
     <Head title="Dashboard" />
 
     <div class="content-wrap">
@@ -57,12 +58,10 @@ function initials(name?: string): string {
                     <div class="relative">
                         <details class="group">
                             <summary
-                                class="list-none cursor-pointer select-none rounded-md bg-card px-3 py-2 text-sm font-semibold text-foreground border border-border hover:bg-muted"
-                            >
+                                class="list-none cursor-pointer select-none rounded-md bg-card px-3 py-2 text-sm font-semibold text-foreground border border-border hover:bg-muted">
                                 <span class="inline-flex items-center gap-2">
                                     <span
-                                        class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-primary/25 text-foreground font-semibold"
-                                    >
+                                        class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-primary/25 text-foreground font-semibold">
                                         {{ initials(user?.name) }}
                                     </span>
                                     <span class="hidden sm:inline max-w-[180px] truncate">
@@ -73,8 +72,7 @@ function initials(name?: string): string {
                             </summary>
 
                             <div
-                                class="absolute right-0 mt-2 w-60 rounded-xl bg-card shadow-lg border border-border p-2 z-50"
-                            >
+                                class="absolute right-0 mt-2 w-60 rounded-xl bg-card shadow-lg border border-border p-2 z-50">
                                 <div class="px-3 py-2">
                                     <div class="text-sm font-semibold text-foreground truncate">
                                         {{ user?.name ?? 'User' }}
@@ -86,42 +84,31 @@ function initials(name?: string): string {
 
                                 <div class="my-2 h-px bg-border"></div>
 
-                                <Link
-                                    :href="profileEdit().url"
-                                    class="block rounded-md px-3 py-2 text-sm text-foreground hover:bg-muted"
-                                >
+                                <Link :href="profileEdit().url"
+                                    class="block rounded-md px-3 py-2 text-sm text-foreground hover:bg-muted">
                                     Profile settings
                                 </Link>
 
-                                <Link
-                                    :href="passwordEdit().url"
-                                    class="block rounded-md px-3 py-2 text-sm text-foreground hover:bg-muted"
-                                >
+                                <Link :href="passwordEdit().url"
+                                    class="block rounded-md px-3 py-2 text-sm text-foreground hover:bg-muted">
                                     Password settings
                                 </Link>
 
-                                <Link
-                                    :href="twoFactorShow.url()"
-                                    class="block rounded-md px-3 py-2 text-sm text-foreground hover:bg-muted"
-                                >
+                                <Link :href="twoFactorShow.url()"
+                                    class="block rounded-md px-3 py-2 text-sm text-foreground hover:bg-muted">
                                     Two-factor authentication
                                 </Link>
 
-                                <Link
-                                    :href="appearanceEdit().url"
-                                    class="block rounded-md px-3 py-2 text-sm text-foreground hover:bg-muted"
-                                >
+                                <Link :href="appearanceEdit().url"
+                                    class="block rounded-md px-3 py-2 text-sm text-foreground hover:bg-muted">
                                     Appearance settings
                                 </Link>
 
                                 <div class="my-2 h-px bg-border"></div>
 
                                 <!-- Uses the same logout route helper you already use in VerifyEmail.vue -->
-                                <Link
-                                    :href="logout()"
-                                    as="button"
-                                    class="w-full text-left rounded-md px-3 py-2 text-sm text-foreground hover:bg-muted"
-                                >
+                                <Link :href="logout()" as="button"
+                                    class="w-full text-left rounded-md px-3 py-2 text-sm text-foreground hover:bg-muted">
                                     Sign out
                                 </Link>
                             </div>

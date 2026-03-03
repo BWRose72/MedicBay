@@ -17,5 +17,4 @@ class Specialisation extends Model
     protected $fillable = [
         'name',
     ];
-
 }

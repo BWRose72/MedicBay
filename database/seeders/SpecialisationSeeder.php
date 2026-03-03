@@ -2,9 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
 use App\Models\Specialisation;
+use Illuminate\Database\Seeder;
 
 class SpecialisationSeeder extends Seeder
 {
@@ -13,7 +12,7 @@ class SpecialisationSeeder extends Seeder
      */
     public function run(): void
     {
-         $specialisations = [
+        $specialisations = [
             'Cardiology',
             'Dermatology',
             'Endocrinology',

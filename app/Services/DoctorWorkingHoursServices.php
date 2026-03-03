@@ -150,7 +150,7 @@ final class DoctorWorkingHoursServices
         if ($parsed !== false) {
             return $parsed;
         }
-        
+
         throw new \InvalidArgumentException("Invalid time format: {$time}");
     }
 }
