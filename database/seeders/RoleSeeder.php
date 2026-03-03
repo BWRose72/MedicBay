@@ -27,6 +27,7 @@ class RoleSeeder extends Seeder
             'schedule.book',
             'review.view',
             'review.leave',
+            'admin_doctor',
         ];
 
         foreach ($permissions as $permission) {

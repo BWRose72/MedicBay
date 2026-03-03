@@ -11,7 +11,7 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
-final class DoctorWorkingHoursService
+final class DoctorWorkingHoursServices
 {
     public function intervals30Min(int $workingHoursId): Collection
     {
@@ -51,13 +51,13 @@ final class DoctorWorkingHoursService
 
     public function create(User $actor, int $doctorId, array $attributes): DoctorWorkingHour
     {
-        if (!$actor->can('doctor')) {
+        if (! $actor->can('doctor')) {
             throw new AuthorizationException('You are not allowed to perform this action.');
         }
 
         $data = $this->normalizeAttributes($attributes, $doctorId);
 
-        $workingHours = new DoctorWorkingHour();
+        $workingHours = new DoctorWorkingHour;
         $workingHours->fill($data);
         $workingHours->save();
 
@@ -66,7 +66,7 @@ final class DoctorWorkingHoursService
 
     public function update(User $actor, int $workingHoursId, array $attributes): DoctorWorkingHour
     {
-        if (!$actor->can('doctor')) {
+        if (! $actor->can('doctor')) {
             throw new AuthorizationException('You are not allowed to perform this action.');
         }
 
@@ -82,7 +82,7 @@ final class DoctorWorkingHoursService
 
     public function delete(User $actor, int $workingHoursId): void
     {
-        if (!$actor->can('doctor')) {
+        if (! $actor->can('doctor')) {
             throw new AuthorizationException('You are not allowed to perform this action.');
         }
 
@@ -93,7 +93,7 @@ final class DoctorWorkingHoursService
 
     public function replaceSchedule(User $actor, int $doctorId, array $entries): Collection
     {
-        if (!$actor->can('doctor')) {
+        if (! $actor->can('doctor')) {
             throw new AuthorizationException('You are not allowed to perform this action.');
         }
 
@@ -107,7 +107,7 @@ final class DoctorWorkingHoursService
             foreach ($entries as $attributes) {
                 $data = $this->normalizeAttributes($attributes, $doctorId);
 
-                $workingHours = new DoctorWorkingHour();
+                $workingHours = new DoctorWorkingHour;
                 $workingHours->fill($data);
                 $workingHours->save();
 
@@ -133,6 +133,7 @@ final class DoctorWorkingHoursService
     private function normalizeAttributes(array $attributes, int $doctorId): array
     {
         $attributes['doctor_id'] = $doctorId;
+
         return $attributes;
     }
 
@@ -149,8 +150,7 @@ final class DoctorWorkingHoursService
         if ($parsed !== false) {
             return $parsed;
         }
-
-        // If the DB returns unexpected format, fail fast.
+        
         throw new \InvalidArgumentException("Invalid time format: {$time}");
     }
 }
