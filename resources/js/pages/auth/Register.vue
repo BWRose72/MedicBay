@@ -55,12 +55,52 @@ import { store } from '@/routes/register';
                 </div>
 
                 <div class="grid gap-2">
+                    <Label for="gender">Gender</Label>
+                    <Input
+                        id="gender"
+                        type="text"
+                        required
+                        :tabindex="3"
+                        autocomplete="sex"
+                        name="gender"
+                        placeholder="male / female / other"
+                    />
+                    <InputError :message="errors.gender" />
+                </div>
+
+                <div class="grid gap-2">
+                    <Label for="date_of_birth">Date of birth</Label>
+                    <Input
+                        id="date_of_birth"
+                        type="date"
+                        required
+                        :tabindex="4"
+                        autocomplete="bday"
+                        name="date_of_birth"
+                    />
+                    <InputError :message="errors.date_of_birth" />
+                </div>
+
+                <div class="grid gap-2">
+                    <Label for="phone">Phone (optional)</Label>
+                    <Input
+                        id="phone"
+                        type="text"
+                        :tabindex="5"
+                        autocomplete="tel"
+                        name="phone"
+                        placeholder="+359..."
+                    />
+                    <InputError :message="errors.phone" />
+                </div>
+
+                <div class="grid gap-2">
                     <Label for="password">Password</Label>
                     <Input
                         id="password"
                         type="password"
                         required
-                        :tabindex="3"
+                        :tabindex="6"
                         autocomplete="new-password"
                         name="password"
                         placeholder="Password"
@@ -74,7 +114,7 @@ import { store } from '@/routes/register';
                         id="password_confirmation"
                         type="password"
                         required
-                        :tabindex="4"
+                        :tabindex="7"
                         autocomplete="new-password"
                         name="password_confirmation"
                         placeholder="Confirm password"
@@ -85,7 +125,7 @@ import { store } from '@/routes/register';
                 <Button
                     type="submit"
                     class="mt-2 w-full"
-                    tabindex="5"
+                    tabindex="8"
                     :disabled="processing"
                     data-test="register-user-button"
                 >
@@ -99,7 +139,7 @@ import { store } from '@/routes/register';
                 <TextLink
                     :href="login()"
                     class="underline underline-offset-4"
-                    :tabindex="6"
+                    :tabindex="9"
                     >Log in</TextLink
                 >
             </div>

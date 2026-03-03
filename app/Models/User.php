@@ -55,9 +55,9 @@ class User extends Authenticatable
         ];
     }
 
-    protected static function booted(): void
+    protected static function booted()
     {
-        static::created(function (User $user) {
+        static::created(function ($user) {
             $user->assignRole('patient');
         });
     }
