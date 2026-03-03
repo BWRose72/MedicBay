@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Models\DoctorWorkingHour;
 use App\Services\DoctorServices;
 use App\Services\ReviewServices;
 use App\Services\SpecialisationServices;
+use App\Services\DoctorWorkingHoursService;
+use App\Services\DoctorWorkingHoursServices;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -23,7 +26,6 @@ final class DoctorsController extends Controller
 
         $specialisations = $specialisationServices->all()
             ->map(fn ($s) => [
-                // Adjust keys if your model differs
                 'specialisation_id' => (int) $s->specialisation_id,
                 'name' => (string) $s->name,
             ])
@@ -33,7 +35,6 @@ final class DoctorsController extends Controller
             ? $doctorServices->allBySpecialisationId($selectedSpecialisationId)
             : $doctorServices->all();
 
-        // If you already calculate rating elsewhere, keep your existing logic.
         $payload = $doctors->map(function ($d) use ($reviewServices, $specialisations) {
             $summary = $reviewServices->publicDoctorRatingSummary((int) $d->doctor_id);
 
@@ -55,6 +56,47 @@ final class DoctorsController extends Controller
             'doctors' => $payload,
             'specialisations' => $specialisations,
             'selectedSpecialisationId' => $selectedSpecialisationId,
+        ]);
+    }
+
+    public function show(
+        int $doctor_id,
+        DoctorServices $doctorServices,
+        DoctorWorkingHoursServices $doctorWorkingHoursService,
+    ): Response {
+        $doctor = $doctorServices->findOrFail($doctor_id);
+        $doctor->load('specialisation');
+
+        $workingHours = DoctorWorkingHour::query()
+            ->where('doctor_id', $doctor_id)
+            ->orderBy('day_of_week')
+            ->orderBy('start_time')
+            ->get();
+
+        // Synthesize 30-min appointment slots from each working-hours row
+        $slots = $workingHours->map(function (DoctorWorkingHour $wh) use ($doctorWorkingHoursService) {
+            return [
+                'working_hours_id' => (int) $wh->id,
+                'day_of_week' => (int) $wh->day_of_week,
+                'start_time' => (string) $wh->start_time,
+                'end_time' => (string) $wh->end_time,
+                'intervals' => $doctorWorkingHoursService->intervals30Min((int) $wh->id)->values(),
+            ];
+        })->values();
+
+        return Inertia::render('Doctors/Show', [
+            'doctor' => [
+                'doctor_id' => (int) $doctor->doctor_id,
+                'name' => (string) $doctor->name,
+                'display_name' => (string) $doctor->display_name,
+                'specialisation' => [
+                    'specialisation_id' => (int) ($doctor->specialisation?->specialisation_id ?? 0),
+                    'name' => (string) ($doctor->specialisation?->name ?? ''),
+                ],
+                'phone' => (string) ($doctor->phone ?? ''),
+                'bio' => (string) ($doctor->bio ?? ''),
+            ],
+            'slots' => $slots, // placeholder until i figure out how to add the slots
         ]);
     }
 }
