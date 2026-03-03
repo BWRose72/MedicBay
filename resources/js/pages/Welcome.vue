@@ -66,7 +66,9 @@ defineOptions({
                         </p>
 
                         <div class="mt-6">
-                            <Link href="/appointments/create" class="btn-primary">
+                            <Link 
+                            :href="$page.props.auth.user ? '/dashboard' : '/login'"
+                            class="btn-primary">
                                 Make an appointment
                             </Link>
                         </div>
