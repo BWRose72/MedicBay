@@ -28,7 +28,7 @@ defineOptions({
                 <section class="relative overflow-hidden">
                     <div class="container-main section-spacing">
                         <!-- Green box behind hero+label -->
-                        <div class="rounded-3xl bg-primary/75 p-6 sm:p-10">
+                        <div class="rounded-3xl bg-primary/65 p-6 sm:p-10">
                             <div class="grid items-center gap-10 lg:grid-cols-2">
                                 <!-- Left: slogan/label -->
                                 <div class="text-center lg:text-left">

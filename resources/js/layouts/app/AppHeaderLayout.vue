@@ -61,7 +61,7 @@ withDefaults(defineProps<Props>(), {
                         <Link
                             v-if="canRegister"
                             :href="register()"
-                            class="rounded-md bg-primary-foreground px-4 py-2 text-sm font-semibold text-primary hover:bg-primary-foreground/90"
+                            class="rounded-md bg-primary-foreground px-4 py-2 text-sm font-semibold text-foreground hover:bg-primary-foreground/90"
                         >
                             Sign up
                         </Link>
