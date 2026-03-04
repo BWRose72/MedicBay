@@ -9,9 +9,12 @@ use App\Services\DoctorServices;
 use App\Services\DoctorWorkingHoursServices;
 use App\Services\ReviewServices;
 use App\Services\SpecialisationServices;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\Response as HttpResponse;
+
 
 final class DoctorsController extends Controller
 {
@@ -59,6 +62,7 @@ final class DoctorsController extends Controller
     }
 
     public function show(
+        Request $request,
         int $doctor_id,
         DoctorServices $doctorServices,
         DoctorWorkingHoursServices $doctorWorkingHoursService,
@@ -72,7 +76,6 @@ final class DoctorsController extends Controller
             ->orderBy('start_time')
             ->get();
 
-        // Synthesize 30-min appointment slots from each working-hours row
         $slots = $workingHours->map(function (DoctorWorkingHour $wh) use ($doctorWorkingHoursService) {
             return [
                 'working_hours_id' => (int) $wh->id,
@@ -82,6 +85,16 @@ final class DoctorsController extends Controller
                 'intervals' => $doctorWorkingHoursService->intervals30Min((int) $wh->id)->values(),
             ];
         })->values();
+
+        $user = $request->user();
+
+        $canEdit =
+            $user !== null
+            && method_exists($user, 'hasRole')
+            && (
+                $user->hasRole('admin')
+                || ($user->hasRole('doctor') && (int) $doctor->user_id === (int) $user->getKey())
+            );
 
         return Inertia::render('Doctors/Show', [
             'doctor' => [
@@ -95,7 +108,87 @@ final class DoctorsController extends Controller
                 'phone' => (string) ($doctor->phone ?? ''),
                 'bio' => (string) ($doctor->bio ?? ''),
             ],
-            'slots' => $slots, // placeholder until i figure out how to add the slots
+            'can_edit' => $canEdit,
+            'slots' => $slots,
         ]);
     }
+
+    public function edit(
+        Request $request,
+        int $doctor_id,
+        DoctorServices $doctorServices,
+    ): Response {
+        $doctor = $doctorServices->findOrFail($doctor_id);
+
+        $user = $request->user();
+
+        $allowed =
+            $user !== null
+            && method_exists($user, 'hasRole')
+            && (
+                $user->hasRole('admin')
+                || ($user->hasRole('doctor') && (int) $doctor->user_id === (int) $user->getKey())
+            );
+
+        if (!$allowed) {
+            abort(HttpResponse::HTTP_FORBIDDEN);
+        }
+
+        $doctor->load('specialisation');
+
+        return Inertia::render('Doctors/Edit', [
+            'doctor' => [
+                'doctor_id' => (int) $doctor->doctor_id,
+                'display_name' => (string) $doctor->display_name,
+                'name' => (string) $doctor->name,
+                'phone' => (string) $doctor->phone,
+                'bio' => (string) ($doctor->bio ?? ''),
+                'specialisation' => [
+                    'specialisation_id' => (int) ($doctor->specialisation?->specialisation_id ?? 0),
+                    'name' => (string) ($doctor->specialisation?->name ?? ''),
+                ],
+            ],
+        ]);
+    }
+
+    public function update(
+        Request $request,
+        int $doctor_id,
+        DoctorServices $doctorServices,
+    ): RedirectResponse {
+        $doctor = $doctorServices->findOrFail($doctor_id);
+
+        $user = $request->user();
+
+        $allowed =
+            $user !== null
+            && method_exists($user, 'hasRole')
+            && (
+                $user->hasRole('admin')
+                || ($user->hasRole('doctor') && (int) $doctor->user_id === (int) $user->getKey())
+            );
+
+        if (!$allowed) {
+            abort(HttpResponse::HTTP_FORBIDDEN);
+        }
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'phone' => ['required', 'string', 'max:255'],
+            'bio' => ['nullable', 'string'],
+        ]);
+
+        $doctor->fill([
+            'name' => $validated['name'],
+            'phone' => $validated['phone'],
+            'bio' => $validated['bio'] ?? null,
+        ]);
+
+        $doctor->save();
+
+        return redirect()->route('doctors.show', ['doctor_id' => (int) $doctor->doctor_id]);
+    }
+
+    public function indexAdmin() {}
+    public function create() {}
 }

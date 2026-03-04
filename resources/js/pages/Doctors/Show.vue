@@ -15,7 +15,8 @@ type DoctorPublic = {
 
 const props = defineProps<{
     doctor: DoctorPublic;
-    slots: any[]; // not rendered yet
+    can_edit: boolean;
+    slots: any[];
 }>();
 
 function doctorImageUrl(doctorId: number): string {
@@ -46,7 +47,14 @@ function fallbackDoctorImage(): string {
                         </p>
                     </div>
 
-                    <Link href="/doctors" class="nav-link">Back to doctors</Link>
+                    <div class="flex items-center gap-3">
+                        <Link v-if="props.can_edit" :href="`/doctors/${props.doctor.doctor_id}/edit`"
+                            class="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90">
+                            Edit
+                        </Link>
+
+                        <Link href="/doctors" class="nav-link">Back to doctors</Link>
+                    </div>
                 </div>
 
                 <div class="mt-10 grid gap-8 lg:grid-cols-[1fr_480px] items-start">

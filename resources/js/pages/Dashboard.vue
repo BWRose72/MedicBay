@@ -1,16 +1,10 @@
 <script setup lang="ts">
-import { Head, Link, usePage } from '@inertiajs/vue3';
+import { Head, router } from '@inertiajs/vue3';
 import AppPageLayout from '@/layouts/AppPageLayout.vue';
-
-import { logout } from '@/routes';
-import { edit as profileEdit } from '@/routes/profile';
-import { edit as passwordEdit } from '@/routes/user-password';
-import { edit as appearanceEdit } from '@/routes/appearance';
-import { show as twoFactorShow } from '@/routes/two-factor';
 
 defineOptions({ layout: AppPageLayout });
 
-type AppointmentRow = {
+type PatientAppointmentRow = {
     appointment_id: number;
     doctor_id: number;
     doctor_name: string;
@@ -20,103 +14,180 @@ type AppointmentRow = {
     can_review: boolean;
 };
 
-const props = defineProps<{
-    dashboard_type: 'patient' | 'default';
-    appointments?: {
-        past: AppointmentRow[];
-        this_week: AppointmentRow[];
-        future: AppointmentRow[];
-    };
-}>();
+type DoctorAppointmentBox = {
+    appointment_id: number;
+    start_time: string; // "Y-m-d H:i"
+    time: string; // "H:i"
+    ends_at: string; // "Y-m-d H:i"
+    patient_name: string;
+    patient_gender: string;
+    patient_age: number | null | undefined;
+};
 
-const page = usePage();
-const user = page.props.auth?.user as { name?: string; email?: string } | undefined;
+type PatientPayload = {
+    past: PatientAppointmentRow[];
+    this_week: PatientAppointmentRow[];
+    future: PatientAppointmentRow[];
+};
 
-function initials(name?: string): string {
-    if (!name) return 'U';
-    const parts = name.trim().split(/\s+/).filter(Boolean);
-    const a = parts[0]?.[0] ?? 'U';
-    const b = parts.length > 1 ? (parts[parts.length - 1]?.[0] ?? '') : '';
-    return (a + b).toUpperCase();
+type DoctorPayload = {
+    past: DoctorAppointmentBox[];
+    current: DoctorAppointmentBox | null;
+    future: DoctorAppointmentBox[];
+};
+
+type Props =
+    | { dashboard_type: 'patient'; appointments?: PatientPayload }
+    | { dashboard_type: 'doctor'; appointments?: DoctorPayload }
+    | { dashboard_type: 'admin' | 'default'; appointments?: undefined };
+
+const props = defineProps<Props>();
+
+function genderAgeLine(a: DoctorAppointmentBox): string {
+    const g = (a.patient_gender || '').trim();
+    const age = a.patient_age ?? null;
+
+    if (g && age !== null) return `${g}, ${age}`;
+    if (g) return g;
+    if (age !== null) return `${age}`;
+    return '';
+}
+
+function markCompleted(id: number) {
+    router.patch(`/appointments/${id}/status`, { status: 'Completed' }, { preserveScroll: true });
+}
+
+function markNoShow(id: number) {
+    router.patch(`/appointments/${id}/status`, { status: 'NoShow' }, { preserveScroll: true });
+}
+
+function cancelAppointment(id: number) {
+    router.patch(`/appointments/${id}/cancel`, {}, { preserveScroll: true });
 }
 </script>
 
 <template>
+
     <Head title="Dashboard" />
 
     <div class="content-wrap">
+        <div class="content-bg"></div>
         <div class="content-overlay"></div>
 
         <div class="content-foreground">
             <div class="container-main section-spacing">
-                <!-- Title + Account dropdown -->
-                <div class="flex items-start justify-between gap-4">
+                <div>
+                    <h1 class="text-3xl sm:text-4xl font-semibold tracking-tight text-foreground">
+                        Dashboard
+                    </h1>
+                    <p class="mt-2 text-base text-muted-foreground">
+                        <span v-if="props.dashboard_type === 'patient'">Your appointments</span>
+                        <span v-else-if="props.dashboard_type === 'doctor'">Today’s appointments</span>
+                        <span v-else>Overview</span>
+                    </p>
+                </div>
+
+                <!-- Doctor dashboard -->
+                <div v-if="props.dashboard_type === 'doctor'" class="mt-10 space-y-10">
                     <div>
-                        <h1 class="text-3xl sm:text-4xl font-semibold tracking-tight text-foreground">
-                            Dashboard
-                        </h1>
-                        <p class="mt-2 text-base text-muted-foreground">
-                            <span v-if="props.dashboard_type === 'patient'">Your appointments</span>
-                            <span v-else>Overview</span>
-                        </p>
+                        <div class="mb-3 text-lg font-semibold text-foreground">Current</div>
+
+                        <div v-if="props.appointments?.current"
+                            class="flex items-stretch overflow-hidden rounded-2xl bg-primary/50 border border-border">
+                            <div class="flex w-28 items-center justify-center border-r border-border px-3 py-5">
+                                <div class="text-xl font-semibold text-foreground">{{ props.appointments.current.time }}
+                                </div>
+                            </div>
+
+                            <div class="flex flex-1 flex-col justify-center px-5 py-5">
+                                <div class="text-base font-semibold text-foreground">{{
+                                    props.appointments.current.patient_name }}</div>
+                                <div class="mt-1 text-sm text-foreground/80">
+                                    {{ genderAgeLine(props.appointments.current) }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div v-else
+                            class="rounded-2xl bg-card/70 backdrop-blur-sm border border-border p-6 text-muted-foreground">
+                            No current appointment.
+                        </div>
                     </div>
 
-                    <div class="relative">
-                        <details class="group">
-                            <summary
-                                class="list-none cursor-pointer select-none rounded-md bg-card px-3 py-2 text-sm font-semibold text-foreground border border-border hover:bg-muted"
-                            >
-                                <span class="inline-flex items-center gap-2">
-                                    <span
-                                        class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-primary/25 text-foreground font-semibold"
-                                    >
-                                        {{ initials(user?.name) }}
-                                    </span>
-                                    <span class="hidden sm:inline max-w-[180px] truncate">
-                                        {{ user?.name ?? 'Account' }}
-                                    </span>
-                                    <span class="opacity-70">▾</span>
-                                </span>
-                            </summary>
+                    <div>
+                        <div class="mb-3 text-lg font-semibold text-foreground">Past</div>
 
-                            <div class="absolute right-0 mt-2 w-60 rounded-xl bg-card shadow-lg border border-border p-2 z-50">
-                                <div class="px-3 py-2">
-                                    <div class="text-sm font-semibold text-foreground truncate">
-                                        {{ user?.name ?? 'User' }}
-                                    </div>
-                                    <div class="text-xs text-muted-foreground truncate">
-                                        {{ user?.email ?? '' }}
+                        <div v-if="props.appointments?.past?.length" class="space-y-3">
+                            <div v-for="a in props.appointments.past" :key="a.appointment_id"
+                                class="flex items-stretch overflow-hidden rounded-2xl bg-primary/50 border border-border">
+                                <div
+                                    class="flex w-28 flex-col items-center justify-center gap-2 border-r border-border px-3 py-5">
+                                    <div class="text-xl font-semibold text-foreground">{{ a.time }}</div>
+
+                                    <div class="flex flex-col gap-2">
+                                        <button type="button"
+                                            class="rounded-md border border-border bg-background/50 px-2 py-1 text-xs font-semibold text-foreground hover:bg-muted"
+                                            @click="markCompleted(a.appointment_id)">
+                                            Completed
+                                        </button>
+                                        <button type="button"
+                                            class="rounded-md border border-border bg-background/50 px-2 py-1 text-xs font-semibold text-foreground hover:bg-muted"
+                                            @click="markNoShow(a.appointment_id)">
+                                            NoShow
+                                        </button>
                                     </div>
                                 </div>
 
-                                <div class="my-2 h-px bg-border"></div>
-
-                                <Link :href="profileEdit().url" class="block rounded-md px-3 py-2 text-sm text-foreground hover:bg-muted">
-                                    Profile settings
-                                </Link>
-                                <Link :href="passwordEdit().url" class="block rounded-md px-3 py-2 text-sm text-foreground hover:bg-muted">
-                                    Password settings
-                                </Link>
-                                <Link :href="twoFactorShow.url()" class="block rounded-md px-3 py-2 text-sm text-foreground hover:bg-muted">
-                                    Two-factor authentication
-                                </Link>
-                                <Link :href="appearanceEdit().url" class="block rounded-md px-3 py-2 text-sm text-foreground hover:bg-muted">
-                                    Appearance settings
-                                </Link>
-
-                                <div class="my-2 h-px bg-border"></div>
-
-                                <Link :href="logout()" as="button" class="w-full text-left rounded-md px-3 py-2 text-sm text-foreground hover:bg-muted">
-                                    Sign out
-                                </Link>
+                                <div class="flex flex-1 flex-col justify-center px-5 py-5">
+                                    <div class="text-base font-semibold text-foreground">{{ a.patient_name }}</div>
+                                    <div class="mt-1 text-sm text-foreground/80">
+                                        {{ genderAgeLine(a) }}
+                                    </div>
+                                </div>
                             </div>
-                        </details>
+                        </div>
+
+                        <div v-else
+                            class="rounded-2xl bg-card/70 backdrop-blur-sm border border-border p-6 text-muted-foreground">
+                            No past appointments today.
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="mb-3 text-lg font-semibold text-foreground">Future</div>
+
+                        <div v-if="props.appointments?.future?.length" class="space-y-3">
+                            <div v-for="a in props.appointments.future" :key="a.appointment_id"
+                                class="flex items-stretch overflow-hidden rounded-2xl bg-primary/50 border border-border">
+                                <div
+                                    class="flex w-28 flex-col items-center justify-center gap-2 border-r border-border px-3 py-5">
+                                    <div class="text-xl font-semibold text-foreground">{{ a.time }}</div>
+
+                                    <button type="button"
+                                        class="rounded-md border border-border bg-background/50 px-2 py-1 text-xs font-semibold text-foreground hover:bg-muted"
+                                        @click="cancelAppointment(a.appointment_id)">
+                                        Cancel
+                                    </button>
+                                </div>
+
+                                <div class="flex flex-1 flex-col justify-center px-5 py-5">
+                                    <div class="text-base font-semibold text-foreground">{{ a.patient_name }}</div>
+                                    <div class="mt-1 text-sm text-foreground/80">
+                                        {{ genderAgeLine(a) }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div v-else
+                            class="rounded-2xl bg-card/70 backdrop-blur-sm border border-border p-6 text-muted-foreground">
+                            No future appointments today.
+                        </div>
                     </div>
                 </div>
 
                 <!-- Patient dashboard -->
-                <div v-if="props.dashboard_type === 'patient'" class="mt-10 space-y-8">
-                    <!-- Past dropdown -->
+                <div v-else-if="props.dashboard_type === 'patient'" class="mt-10 space-y-8">
                     <details class="rounded-2xl bg-card/70 backdrop-blur-sm border border-border">
                         <summary class="cursor-pointer select-none px-6 py-4 text-lg font-semibold text-foreground">
                             Past appointments
@@ -130,11 +201,8 @@ function initials(name?: string): string {
                                 No past appointments.
                             </div>
 
-                            <div
-                                v-for="a in props.appointments?.past"
-                                :key="a.appointment_id"
-                                class="rounded-2xl bg-background/70 p-5 flex items-center justify-between gap-4"
-                            >
+                            <div v-for="a in props.appointments?.past" :key="a.appointment_id"
+                                class="rounded-2xl bg-background/70 p-5 flex items-center justify-between gap-4 border border-border">
                                 <div>
                                     <div class="text-base font-semibold text-foreground">
                                         {{ a.start_time }} — {{ a.doctor_name }}
@@ -144,19 +212,15 @@ function initials(name?: string): string {
                                     </div>
                                 </div>
 
-                                <button
-                                    type="button"
-                                    class="rounded-md px-4 py-2 text-sm font-semibold"
+                                <button type="button" class="rounded-md px-4 py-2 text-sm font-semibold"
                                     :class="a.can_review ? 'bg-secondary text-secondary-foreground hover:opacity-90' : 'bg-muted text-muted-foreground cursor-not-allowed'"
-                                    :disabled="!a.can_review"
-                                >
+                                    :disabled="!a.can_review">
                                     Review
                                 </button>
                             </div>
                         </div>
                     </details>
 
-                    <!-- This week (always visible) -->
                     <div class="rounded-2xl bg-card/70 backdrop-blur-sm border border-border p-6">
                         <div class="text-lg font-semibold text-foreground">
                             This week
@@ -170,11 +234,8 @@ function initials(name?: string): string {
                                 No appointments this week.
                             </div>
 
-                            <div
-                                v-for="a in props.appointments?.this_week"
-                                :key="a.appointment_id"
-                                class="rounded-2xl bg-background/70 p-5 flex items-center justify-between gap-4"
-                            >
+                            <div v-for="a in props.appointments?.this_week" :key="a.appointment_id"
+                                class="rounded-2xl bg-background/70 p-5 flex items-center justify-between gap-4 border border-border">
                                 <div>
                                     <div class="text-base font-semibold text-foreground">
                                         {{ a.start_time }} — {{ a.doctor_name }}
@@ -184,19 +245,15 @@ function initials(name?: string): string {
                                     </div>
                                 </div>
 
-                                <button
-                                    type="button"
-                                    class="rounded-md px-4 py-2 text-sm font-semibold"
+                                <button type="button" class="rounded-md px-4 py-2 text-sm font-semibold"
                                     :class="a.can_review ? 'bg-secondary text-secondary-foreground hover:opacity-90' : 'bg-muted text-muted-foreground cursor-not-allowed'"
-                                    :disabled="!a.can_review"
-                                >
+                                    :disabled="!a.can_review">
                                     Review
                                 </button>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Future dropdown -->
                     <details class="rounded-2xl bg-card/70 backdrop-blur-sm border border-border">
                         <summary class="cursor-pointer select-none px-6 py-4 text-lg font-semibold text-foreground">
                             Future appointments
@@ -210,11 +267,8 @@ function initials(name?: string): string {
                                 No future appointments.
                             </div>
 
-                            <div
-                                v-for="a in props.appointments?.future"
-                                :key="a.appointment_id"
-                                class="rounded-2xl bg-background/70 p-5 flex items-center justify-between gap-4"
-                            >
+                            <div v-for="a in props.appointments?.future" :key="a.appointment_id"
+                                class="rounded-2xl bg-background/70 p-5 flex items-center justify-between gap-4 border border-border">
                                 <div>
                                     <div class="text-base font-semibold text-foreground">
                                         {{ a.start_time }} — {{ a.doctor_name }}
@@ -224,11 +278,9 @@ function initials(name?: string): string {
                                     </div>
                                 </div>
 
-                                <button
-                                    type="button"
+                                <button type="button"
                                     class="rounded-md px-4 py-2 text-sm font-semibold bg-muted text-muted-foreground cursor-not-allowed"
-                                    disabled
-                                >
+                                    disabled>
                                     Review
                                 </button>
                             </div>
@@ -236,11 +288,11 @@ function initials(name?: string): string {
                     </details>
                 </div>
 
-                <!-- Default dashboard placeholder (doctor/admin later) -->
+                <!-- Default/admin placeholder -->
                 <div v-else class="mt-10 rounded-2xl bg-card/70 backdrop-blur-sm border border-border p-8">
                     <div class="text-xl font-semibold text-foreground">Dashboard</div>
                     <div class="mt-2 text-muted-foreground">
-                        Role-specific dashboards for admin/doctor will be implemented later.
+                        Role-specific dashboards for admin will be implemented later.
                     </div>
                 </div>
             </div>
