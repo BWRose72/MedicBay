@@ -19,10 +19,20 @@ class DoctorFactory extends Factory
     public function definition(): array
     {
         return [
-            'user_id' => User::factory(),
-            'name' => fake()->name(),
-            'phone' => fake()->phoneNumber(),
-            'bio' => fake()->sentence(5),
+        'user_id' => User::factory(),
+        'name' => "placeholder",
+        'phone' => fake()->phoneNumber(),
+        'bio' => fake()->sentence(5),
         ];
+    }
+
+    public function configure()
+    {
+        return $this->afterCreating(function ($doctor) {
+            $doctor->name = $doctor->user->name;
+            $doctor->save();
+
+            $doctor->user->assignRole('doctor');
+        });
     }
 }

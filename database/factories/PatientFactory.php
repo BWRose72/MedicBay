@@ -19,11 +19,19 @@ class PatientFactory extends Factory
     {
         return [
             'user_id' => User::factory(),
-            'name' => fake()->name(),
+            'name' => "placeholder",
             'gender'=> $this->faker->randomElement(['male', 'female']),
             'medical_record_number' => fake()->unique()->regexify('[A-Z0-9]{10}'),
             'date_of_birth' => fake()->date(),
             'phone' => fake()->phoneNumber(),
         ];
+    }
+
+    public function configure()
+    {
+        return $this->afterCreating(function ($patient) {
+            $patient->name = $patient->user->name;
+            $patient->save();
+        });
     }
 }

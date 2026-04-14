@@ -2,13 +2,9 @@
 
 namespace Database\Seeders;
 
-use App\Models\Doctor;
-use App\Models\Patient;
-use App\Models\Specialisation;
 use App\Models\User;
-use Illuminate\Support\Facades\Hash;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -19,26 +15,20 @@ class DatabaseSeeder extends Seeder
     {
         $this->call(RoleSeeder::class);
         $this->call(SpecialisationSeeder::class);
+        
+        $admin = User::updateOrCreate(
+            ['email' => 'admin@example.com'],
+            [
+                'name' => 'Admin',
+                'password' => Hash::make('admin1234'),
+                'email_verified_at' => now(),
+            ]
+        );
 
-        $admin = User::factory()->create([
-            'name' => 'Admin',
-            'email' => 'admin@example.com',
-            'password' => Hash::make('admin1234'),
-        ]);
-
+        $admin->forceFill(['email_verified_at' => now()])->save();
         $admin->assignRole('admin');
 
-        $specialisationIds = Specialisation::pluck('specialisation_id');
-
-        Doctor::factory()
-            ->count(10)
-            ->create([
-                'specialisation_id' => fn () => $specialisationIds->random(),
-            ]);
-
-        Patient::factory()
-            ->count(10)
-            ->create();
-        // User::factory(10)->create();
+        $this->call(PatientSeeder::class);
+        $this->call(DoctorSeeder::class);
     }
 }
