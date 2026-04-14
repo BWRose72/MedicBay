@@ -11,9 +11,9 @@ class DoctorTimeOff extends Model
 {
     use HasFactory;
 
-    protected $table = 'doctor_time_off';
+    protected $table = 'doctor_time_offs';
 
-    protected $primaryKey = 'id';
+    protected $primaryKey = 'time_off_id';
 
     public $incrementing = true;
 

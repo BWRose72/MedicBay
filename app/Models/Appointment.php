@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Carbon;
 
 class Appointment extends Model
 {
@@ -16,7 +15,7 @@ class Appointment extends Model
 
     protected $table = 'appointments';
 
-    protected $primaryKey = 'id';
+    protected $primaryKey = 'appointment_id';
 
     public $incrementing = true;
 
@@ -47,9 +46,9 @@ class Appointment extends Model
     }
 
     // Accessors
-    public function getEndsAtAttribute(): Carbon
+    public function getEndsAtAttribute(): \DateTimeInterface
     {
-        return $this->start_time->copy()->addMinutes(30);
+        return $this->start_time->addMinutes(30);
     }
 
     public function getIsPastAttribute(): bool
@@ -65,12 +64,12 @@ class Appointment extends Model
     // scopes
     public function scopeUpcoming(Builder $query): Builder
     {
-        return $query->where('start_time', '>', now());
+        return $query->where('start_time', '>', now(config('app.timezone', 'Europe/Sofia')));
     }
 
     public function scopePast(Builder $query): Builder
     {
-        return $query->where('start_time', '<=', now());
+        return $query->where('start_time', '<=', now(config('app.timezone', 'Europe/Sofia')));
     }
 
     public function scopeForDoctor(Builder $query, int $doctorId): Builder

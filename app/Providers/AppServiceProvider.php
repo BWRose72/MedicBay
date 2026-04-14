@@ -32,6 +32,7 @@ class AppServiceProvider extends ServiceProvider
     protected function configureDefaults(): void
     {
         Date::use(CarbonImmutable::class);
+        date_default_timezone_set((string) config('app.timezone', 'Europe/Sofia'));
 
         DB::prohibitDestructiveCommands(
             app()->isProduction(),

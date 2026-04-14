@@ -54,8 +54,9 @@ final class ReviewServices
             throw new InvalidArgumentException('A review has already been left for this appointment.');
         }
 
-        $endsAt = CarbonImmutable::parse($appointment->ends_at);
-        $now = CarbonImmutable::now();
+        $timezone = (string) config('app.timezone', 'Europe/Sofia');
+        $endsAt = CarbonImmutable::parse($appointment->ends_at, $timezone);
+        $now = CarbonImmutable::now($timezone);
 
         // Must be after the appointment ends
         if ($now->lessThan($endsAt)) {

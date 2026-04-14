@@ -30,6 +30,11 @@ final class AllUsersController extends Controller
 
         $users = User::query()
             ->whereNull('deleted_at')
+            ->whereDoesntHave('roles', function ($roleQuery) {
+                $roleQuery
+                    ->where('roles.name', 'admin')
+                    ->where('roles.guard_name', 'web');
+            })
             ->when($q !== '', function ($query) use ($q) {
                 $query->where('name', 'like', "%{$q}%");
             })
@@ -82,6 +87,8 @@ final class AllUsersController extends Controller
             abort(HttpResponse::HTTP_FORBIDDEN);
         }
 
+        $this->abortIfAdminUser($user);
+
         $validated = $request->validate([
             'specialisation_id' => ['required', 'integer', 'exists:specialisations,specialisation_id'],
             'phone' => ['required', 'string', 'max:255'],
@@ -119,6 +126,8 @@ final class AllUsersController extends Controller
             abort(HttpResponse::HTTP_FORBIDDEN);
         }
 
+        $this->abortIfAdminUser($user);
+
         DB::transaction(function () use ($user) {
             // Soft-delete doctor profile if exists
             Doctor::query()->where('user_id', (int) $user->getKey())->delete();
@@ -140,6 +149,8 @@ final class AllUsersController extends Controller
             abort(HttpResponse::HTTP_FORBIDDEN);
         }
 
+        $this->abortIfAdminUser($user);
+
         DB::transaction(function () use ($user) {
             // Soft-delete related profiles so they don’t remain “active” records.
             Doctor::query()->where('user_id', (int) $user->getKey())->delete();
@@ -150,5 +161,12 @@ final class AllUsersController extends Controller
         });
 
         return back();
+    }
+
+    private function abortIfAdminUser(User $user): void
+    {
+        if (method_exists($user, 'hasRole') && $user->hasRole('admin')) {
+            abort(HttpResponse::HTTP_FORBIDDEN);
+        }
     }
 }

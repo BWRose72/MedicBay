@@ -17,7 +17,7 @@ return new class extends Migration
                 ->constrained('doctors', 'doctor_id')
                 ->cascadeOnDelete();
 
-            $table->unsignedTinyInteger('day_of_week'); // 0–6 (iso monday=1, sunday=7)
+            $table->unsignedTinyInteger('day_of_week');
             $table->time('start_time');
             $table->time('end_time');
             $table->time('effective_from');

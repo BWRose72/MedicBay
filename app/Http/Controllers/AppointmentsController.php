@@ -7,13 +7,46 @@ namespace App\Http\Controllers;
 use App\Enums\AppointmentStatus;
 use App\Models\Appointment;
 use App\Models\Doctor;
+use App\Services\DoctorScheduleService;
+use Carbon\CarbonImmutable;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use InvalidArgumentException;
 use Symfony\Component\HttpFoundation\Response;
 
 final class AppointmentsController extends Controller
 {
+    public function store(Request $request, int $doctor_id, DoctorScheduleService $doctorScheduleService): RedirectResponse
+    {
+        $user = $request->user();
+
+        if (!$user) {
+            abort(Response::HTTP_FORBIDDEN);
+        }
+
+        $validated = $request->validate([
+            'start' => ['required', 'date'],
+        ]);
+
+        try {
+            $doctorScheduleService->bookSlot(
+                $user,
+                $doctor_id,
+                CarbonImmutable::parse((string) $validated['start'], (string) config('app.timezone', 'Europe/Sofia')),
+            );
+        } catch (AuthorizationException) {
+            abort(Response::HTTP_FORBIDDEN);
+        } catch (InvalidArgumentException $exception) {
+            return back()->withErrors([
+                'slot' => $exception->getMessage(),
+            ]);
+        }
+
+        return back();
+    }
+
     public function updateStatus(Request $request, Appointment $appointment): RedirectResponse
     {
         $user = $request->user();

@@ -25,6 +25,8 @@ final class DailyAppointmentsServices
             ->whereKey($doctorId)
             ->firstOrFail();
 
+        $timezone = (string) config('app.timezone', 'Europe/Sofia');
+
         return Appointment::query()
             ->with(['patient' => function ($q) {
                 $q->withoutTrashed();
@@ -37,7 +39,7 @@ final class DailyAppointmentsServices
             ->map(function (Appointment $a) {
                 return [
                     'appointment_id' => (int) $a->getKey(),
-                    'start_time' => $a->start_time?->format('Y-m-d H:i:s'),
+                    'start_time' => $a->start_time ? CarbonImmutable::parse($a->start_time, $timezone)->format('Y-m-d H:i:s') : null,
                     'patient_id' => (int) $a->patient_id,
                     'patient_name' => $a->patient?->name,
                     'patient_gender' => $a->patient?->gender,
@@ -58,6 +60,8 @@ final class DailyAppointmentsServices
             ->whereKey($doctorId)
             ->firstOrFail();
 
+        $timezone = (string) config('app.timezone', 'Europe/Sofia');
+        $date = $date->setTimezone($timezone);
         $start = $date->startOfDay();
         $end = $date->endOfDay();
 
@@ -73,7 +77,7 @@ final class DailyAppointmentsServices
             ->map(function (Appointment $a) {
                 return [
                     'appointment_id' => (int) $a->getKey(),
-                    'start_time' => $a->start_time?->format('Y-m-d H:i:s'),
+                    'start_time' => $a->start_time ? CarbonImmutable::parse($a->start_time, $timezone)->format('Y-m-d H:i:s') : null,
                     'patient_id' => (int) $a->patient_id,
                     'patient_name' => $a->patient?->name,
                     'patient_gender' => $a->patient?->gender,

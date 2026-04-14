@@ -13,7 +13,7 @@ class DoctorWorkingHour extends Model
 
     protected $table = 'doctor_working_hour';
 
-    protected $primaryKey = 'id';
+    protected $primaryKey = 'working_hours_id';
 
     public $incrementing = true;
 

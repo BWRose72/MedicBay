@@ -120,7 +120,7 @@ final class DoctorTimeOffService
 
             $this->sendCancellationEmail(
                 doctorName: $this->doctorDisplayName($doctor),
-                appointmentStart: CarbonImmutable::parse($appointment->start_time),
+                appointmentStart: CarbonImmutable::parse($appointment->start_time, (string) config('app.timezone', 'Europe/Sofia')),
                 patientEmail: $appointment->patient?->user?->email,
                 patientName: $appointment->patient?->name,
                 timeOffStart: $start,

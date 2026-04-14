@@ -19,14 +19,17 @@ use InvalidArgumentException;
 
 final class DoctorScheduleService
 {
-    public function freeSlotsForDate(int $doctorId, CarbonImmutable $date): Collection
+    public function slotsForDate(int $doctorId, CarbonImmutable $date): Collection
     {
+        $timezone = $this->timezone();
+        $date = $date->setTimezone($timezone)->startOfDay();
+
         $doctor = Doctor::query()
             ->withoutTrashed()
             ->whereKey($doctorId)
             ->firstOrFail();
 
-        $workingHours = $this->workingHoursForDoctorAndDate($doctor->doctor_id, $date);
+        $workingHours = $this->workingHoursForDoctorAndDate((int) $doctor->doctor_id, $date);
 
         if ($workingHours->isEmpty()) {
             return collect();
@@ -34,58 +37,65 @@ final class DoctorScheduleService
 
         $dayStart = $date->startOfDay();
         $dayEnd = $date->endOfDay();
+        $now = CarbonImmutable::now($timezone);
 
-        $busyStartTimes = Appointment::query()
+        $appointmentsByStart = Appointment::query()
+            ->with(['patient' => function ($q) {
+                $q->withoutTrashed();
+            }])
             ->where('doctor_id', (int) $doctor->doctor_id)
             ->whereBetween('start_time', [$dayStart, $dayEnd])
             ->where('status', AppointmentStatus::Scheduled)
-            ->pluck('start_time')
-            ->map(fn ($dt) => CarbonImmutable::parse($dt)->format('Y-m-d H:i:s'))
-            ->flip(); // for O(1) membership checks
+            ->get()
+            ->keyBy(fn (Appointment $appointment) => CarbonImmutable::parse($appointment->start_time, $timezone)->format('Y-m-d H:i:s'));
 
-        $timeOffs = DoctorTimeOff::query()
-            ->where('doctor_id', (int) $doctor->doctor_id)
-            ->where(function ($q) use ($dayStart, $dayEnd) {
-                // Overlap with the day
-                $q->whereBetween('start_time', [$dayStart, $dayEnd])
-                    ->orWhereBetween('end_time', [$dayStart, $dayEnd])
-                    ->orWhere(function ($qq) use ($dayStart, $dayEnd) {
-                        $qq->where('start_time', '<=', $dayStart)
-                            ->where('end_time', '>=', $dayEnd);
-                    });
-            })
-            ->get();
+        $timeOffs = $this->timeOffsForDoctor((int) $doctor->doctor_id);
+        $slots = collect();
 
-        $free = collect();
-
-        foreach ($workingHours as $wh) {
-            $slots = $this->slotsFromWorkingHourRow($date, $wh);
-
-            foreach ($slots as $slot) {
-                $slotStartStr = $slot['start']->format('Y-m-d H:i:s');
-
-                if (isset($busyStartTimes[$slotStartStr])) {
-                    continue;
-                }
-
+        foreach ($workingHours as $workingHour) {
+            foreach ($this->slotsFromWorkingHourRow($date, $workingHour) as $slot) {
                 if ($this->isSlotInsideTimeOff($slot['start'], $slot['end'], $timeOffs)) {
                     continue;
                 }
 
-                $free->push([
-                    'start' => $slot['start']->format('Y-m-d H:i:s'),
+                $startKey = $slot['start']->format('Y-m-d H:i:s');
+                $appointment = $appointmentsByStart->get($startKey);
+                $isTaken = $appointment instanceof Appointment;
+                $isBookable = ! $isTaken && $now->lt($slot['start']->subHours(2));
+
+                $slots->push([
+                    'appointment_id' => $appointment ? (int) $appointment->getKey() : null,
+                    'start' => $startKey,
                     'end' => $slot['end']->format('Y-m-d H:i:s'),
+                    'time' => $slot['start']->format('H:i'),
+                    'taken' => $isTaken,
+                    'bookable' => $isBookable,
+                    'patient_id' => $appointment ? (int) $appointment->patient_id : null,
+                    'patient_name' => $appointment?->patient?->name,
                 ]);
             }
         }
 
-        return $free->values();
+        return $slots->values();
+    }
+
+    public function freeSlotsForDate(int $doctorId, CarbonImmutable $date): Collection
+    {
+        return $this->slotsForDate($doctorId, $date)
+            ->filter(fn (array $slot) => ! $slot['taken'])
+            ->map(fn (array $slot) => [
+                'start' => $slot['start'],
+                'end' => $slot['end'],
+            ])
+            ->values();
     }
 
     public function bookSlot(User $actor, int $doctorId, CarbonImmutable $slotStart): Appointment
     {
+        $timezone = $this->timezone();
+
         if (! $actor->can('schedule.book')) {
-            throw new AuthorizationException('Only patients (or admins) can book appointments.');
+            throw new AuthorizationException('Only patients can book appointments.');
         }
 
         $doctor = Doctor::query()
@@ -98,15 +108,18 @@ final class DoctorScheduleService
             ->where('user_id', (int) $actor->getKey())
             ->firstOrFail();
 
-        $slotStart = $slotStart->seconds(0);
+        $slotStart = $slotStart->setTimezone($timezone)->seconds(0);
         $slotEnd = $slotStart->addMinutes(30);
+        $now = CarbonImmutable::now($timezone);
 
-        // Must be on the doctor's working schedule and not during time off
+        if ($now->greaterThanOrEqualTo($slotStart->subHours(2))) {
+            throw new InvalidArgumentException('Appointments can only be booked more than 2 hours before the slot starts.');
+        }
+
         $this->assertSlotIsWithinWorkingHours((int) $doctor->doctor_id, $slotStart);
         $this->assertSlotIsNotInTimeOff((int) $doctor->doctor_id, $slotStart, $slotEnd);
 
         return DB::transaction(function () use ($doctor, $patient, $slotStart) {
-            // Lock any existing row at that time (prevents two concurrent bookings most of the time)
             $exists = Appointment::query()
                 ->where('doctor_id', (int) $doctor->doctor_id)
                 ->where('start_time', $slotStart)
@@ -130,20 +143,19 @@ final class DoctorScheduleService
 
     private function workingHoursForDoctorAndDate(int $doctorId, CarbonImmutable $date): Collection
     {
-        $iso = $date->dayOfWeekIso; // 1..7 (Mon..Sun)
-        $zeroBased = $date->dayOfWeek; // 0..6 (Sun..Sat)
+        $iso = $date->dayOfWeekIso;
 
         return DoctorWorkingHour::query()
             ->where('doctor_id', $doctorId)
-            ->whereIn('day_of_week', [$iso, $zeroBased])
+            ->where('day_of_week', $iso)
             ->orderBy('start_time')
             ->get();
     }
 
-    private function slotsFromWorkingHourRow(CarbonImmutable $date, DoctorWorkingHour $wh): array
+    private function slotsFromWorkingHourRow(CarbonImmutable $date, DoctorWorkingHour $workingHour): array
     {
-        $start = $this->combineDateAndTime($date, CarbonImmutable::parse($wh->start_time));
-        $end = $this->combineDateAndTime($date, CarbonImmutable::parse($wh->end_time));
+        $start = $this->combineDateAndTime($date, CarbonImmutable::parse($workingHour->start_time));
+        $end = $this->combineDateAndTime($date, CarbonImmutable::parse($workingHour->end_time));
 
         if ($end->lessThanOrEqualTo($start)) {
             return [];
@@ -160,7 +172,6 @@ final class DoctorScheduleService
             }
 
             $slots[] = ['start' => $cursor, 'end' => $next];
-
             $cursor = $next;
 
             if ($cursor->equalTo($end)) {
@@ -171,20 +182,27 @@ final class DoctorScheduleService
         return $slots;
     }
 
+    private function timeOffsForDoctor(int $doctorId): Collection
+    {
+        return DoctorTimeOff::query()
+            ->where('doctor_id', $doctorId)
+            ->get();
+    }
+
     private function combineDateAndTime(CarbonImmutable $date, CarbonImmutable $time): CarbonImmutable
     {
-        return $date->setTime((int) $time->format('H'), (int) $time->format('i'), 0);
+        return $date
+            ->setTimezone($this->timezone())
+            ->setTime((int) $time->format('H'), (int) $time->format('i'), 0);
     }
 
     private function isSlotInsideTimeOff(CarbonImmutable $slotStart, CarbonImmutable $slotEnd, Collection $timeOffs): bool
     {
-        foreach ($timeOffs as $dto) {
-            // /** @var DoctorTimeOff $to */
-            $toStart = CarbonImmutable::parse($dto->start_time);
-            $toEnd = CarbonImmutable::parse($dto->end_time);
+        foreach ($timeOffs as $timeOff) {
+            $timeOffStart = $this->combineDateAndTime($slotStart, CarbonImmutable::parse($timeOff->start_time));
+            $timeOffEnd = $this->combineDateAndTime($slotStart, CarbonImmutable::parse($timeOff->end_time));
 
-            // Overlap check: [slotStart, slotEnd) overlaps [toStart, toEnd]
-            if ($slotStart->lt($toEnd) && $slotEnd->gt($toStart)) {
+            if ($slotStart->lt($timeOffEnd) && $slotEnd->gt($timeOffStart)) {
                 return true;
             }
         }
@@ -203,9 +221,9 @@ final class DoctorScheduleService
 
         $slotEnd = $slotStart->addMinutes(30);
 
-        foreach ($workingHours as $wh) {
-            $start = $this->combineDateAndTime($date, CarbonImmutable::parse($wh->start_time));
-            $end = $this->combineDateAndTime($date, CarbonImmutable::parse($wh->end_time));
+        foreach ($workingHours as $workingHour) {
+            $start = $this->combineDateAndTime($date, CarbonImmutable::parse($workingHour->start_time));
+            $end = $this->combineDateAndTime($date, CarbonImmutable::parse($workingHour->end_time));
 
             if ($slotStart->greaterThanOrEqualTo($start) && $slotEnd->lessThanOrEqualTo($end)) {
                 return;
@@ -217,14 +235,15 @@ final class DoctorScheduleService
 
     private function assertSlotIsNotInTimeOff(int $doctorId, CarbonImmutable $slotStart, CarbonImmutable $slotEnd): void
     {
-        $timeOffs = DoctorTimeOff::query()
-            ->where('doctor_id', $doctorId)
-            ->where('start_time', '<', $slotEnd)
-            ->where('end_time', '>', $slotStart)
-            ->get();
+        $timeOffs = $this->timeOffsForDoctor($doctorId);
 
-        if ($timeOffs->isNotEmpty()) {
+        if ($this->isSlotInsideTimeOff($slotStart, $slotEnd, $timeOffs)) {
             throw new InvalidArgumentException('Requested slot is during doctor time off.');
         }
+    }
+
+    private function timezone(): string
+    {
+        return (string) config('app.timezone', 'Europe/Sofia');
     }
 }

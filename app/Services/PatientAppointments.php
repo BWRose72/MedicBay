@@ -26,7 +26,8 @@ final class PatientsAppointments
             ->whereKey($patientId)
             ->firstOrFail();
 
-        $now = CarbonImmutable::now();
+        $timezone = (string) config('app.timezone', 'Europe/Sofia');
+        $now = CarbonImmutable::now($timezone);
 
         return Appointment::query()
             ->where('patient_id', $patientId)
@@ -38,7 +39,7 @@ final class PatientsAppointments
                 return [
                     'appointment_id' => (int) $a->getKey(),
                     'doctor_id' => (int) $a->doctor_id,
-                    'start_time' => CarbonImmutable::parse($a->start_time)->format('Y-m-d H:i:s'),
+                    'start_time' => CarbonImmutable::parse($a->start_time, $timezone)->format('Y-m-d H:i:s'),
                     'status' => $a->status instanceof AppointmentStatus ? $a->status->value : (string) $a->status,
                 ];
             })
@@ -69,8 +70,9 @@ final class PatientsAppointments
             throw new InvalidArgumentException('Only scheduled appointments can be cancelled.');
         }
 
-        $start = CarbonImmutable::parse($appointment->start_time);
-        $now = CarbonImmutable::now();
+        $timezone = (string) config('app.timezone', 'Europe/Sofia');
+        $start = CarbonImmutable::parse($appointment->start_time, $timezone);
+        $now = CarbonImmutable::now($timezone);
 
         if ($start->lessThanOrEqualTo($now)) {
             throw new InvalidArgumentException('You cannot cancel an appointment that has already started or passed.');
@@ -97,7 +99,8 @@ final class PatientsAppointments
             ->whereKey($patientId)
             ->firstOrFail();
 
-        $now = CarbonImmutable::now();
+        $timezone = (string) config('app.timezone', 'Europe/Sofia');
+        $now = CarbonImmutable::now($timezone);
 
         return Appointment::query()
             ->where('patient_id', $patientId)
@@ -110,7 +113,7 @@ final class PatientsAppointments
                 return [
                     'appointment_id' => (int) $a->getKey(),
                     'doctor_id' => (int) $a->doctor_id,
-                    'start_time' => CarbonImmutable::parse($a->start_time)->format('Y-m-d H:i:s'),
+                    'start_time' => CarbonImmutable::parse($a->start_time, $timezone)->format('Y-m-d H:i:s'),
                 ];
             })
             ->values();
