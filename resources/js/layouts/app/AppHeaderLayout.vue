@@ -1,14 +1,12 @@
 <script setup lang="ts">
+import { Link, usePage } from '@inertiajs/vue3';
 import AppContent from '@/components/AppContent.vue';
 import AppShell from '@/components/AppShell.vue';
-import type { BreadcrumbItem } from '@/types';
-import { Link, usePage } from '@inertiajs/vue3';
 import { dashboard, login, logout, register } from '@/routes';
-
 import { edit as profileEdit } from '@/routes/profile';
-import { edit as passwordEdit } from '@/routes/user-password';
-import { edit as appearanceEdit } from '@/routes/appearance';
 import { show as twoFactorShow } from '@/routes/two-factor';
+import { edit as passwordEdit } from '@/routes/user-password';
+import type { BreadcrumbItem } from '@/types';
 
 type Props = {
     breadcrumbs?: BreadcrumbItem[];
@@ -132,11 +130,6 @@ function initials(name?: string): string {
                                     class="block rounded-md px-3 py-2 text-sm text-foreground hover:bg-muted">
                                     Two-factor authentication
                                 </Link>
-                                <Link :href="appearanceEdit().url"
-                                    class="block rounded-md px-3 py-2 text-sm text-foreground hover:bg-muted">
-                                    Appearance settings
-                                </Link>
-
                                 <div class="my-2 h-px bg-border"></div>
 
                                 <Link :href="logout()" as="button"
@@ -165,14 +158,15 @@ function initials(name?: string): string {
                         class="flex-1 rounded-md px-3 py-2 text-center text-sm font-medium hover:bg-primary/20">
                         Doctors
                     </Link>
-                    <Link href="/about"
-                        class="flex-1 rounded-md px-3 py-2 text-center text-sm font-medium hover:bg-primary/20">
-                        About
-                    </Link>
 
                     <Link v-if="$page.props.auth.user && isAdmin" href="/admin/users"
                         class="flex-1 rounded-md px-3 py-2 text-center text-sm font-medium hover:bg-primary/20">
                         All Users
+                    </Link>
+                    
+                    <Link href="/about"
+                        class="flex-1 rounded-md px-3 py-2 text-center text-sm font-medium hover:bg-primary/20">
+                        About
                     </Link>
                 </div>
             </div>
