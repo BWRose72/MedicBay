@@ -1,5 +1,7 @@
 <!-- resources/js/pages/PatientDashboard.vue -->
 <script setup lang="ts">
+import { router } from '@inertiajs/vue3';
+
 type PatientAppointmentRow = {
     appointment_id: number;
     doctor_id: number;
@@ -8,6 +10,7 @@ type PatientAppointmentRow = {
     status: string;
     has_left_review: boolean;
     can_review: boolean;
+    can_cancel: boolean;
 };
 
 type PatientPayload = {
@@ -20,6 +23,10 @@ const props = defineProps<{
 }>();
 
 const appointments: PatientPayload = props.appointments ?? { past: [], future: [] };
+
+function cancelAppointment(appointmentId: number) {
+    router.patch(`/appointments/${appointmentId}/patient-cancel`, {}, { preserveScroll: true });
+}
 </script>
 
 <template>
@@ -96,10 +103,13 @@ const appointments: PatientPayload = props.appointments ?? { past: [], future: [
                                     </div>
                                 </div>
 
-                                <button type="button"
-                                    class="rounded-md px-4 py-2 text-sm font-semibold bg-muted text-muted-foreground cursor-not-allowed"
-                                    disabled>
-                                    Review
+                                <button
+                                    v-if="a.can_cancel"
+                                    type="button"
+                                    class="rounded-md bg-secondary px-4 py-2 text-sm font-semibold text-secondary-foreground hover:opacity-90"
+                                    @click="cancelAppointment(a.appointment_id)"
+                                >
+                                    Cancel
                                 </button>
                             </div>
                         </div>

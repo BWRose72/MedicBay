@@ -18,6 +18,10 @@ Route::get('dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth'])
     ->name('dashboard');
 
+Route::patch('/appointments/{appointment}/patient-cancel', [AppointmentsController::class, 'patientCancel'])
+    ->middleware(['auth'])
+    ->name('appointments.patientCancel');
+
 Route::middleware(['auth', 'role:doctor|admin'])->group(function () {
 Route::patch('/appointments/{appointment}/status', [AppointmentsController::class, 'updateStatus'])
         ->name('appointments.updateStatus');

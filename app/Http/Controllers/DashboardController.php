@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Enums\AppointmentStatus;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -54,20 +55,10 @@ final class DashboardController extends Controller
         $tz = config('app.timezone', 'Europe/Sofia');
         $now = CarbonImmutable::now($tz);
 
-        // TODAY ONLY
-        $dayStart = $now->startOfDay();
-        $dayEnd = $now->endOfDay();
-
         $rows = DB::table('appointments')
-            ->join('doctors', function ($join) {
-                $join->on('appointments.doctor_id', '=', 'doctors.doctor_id')
-                    ->whereNull('doctors.deleted_at');
-            })
+            ->leftJoin('doctors', 'appointments.doctor_id', '=', 'doctors.doctor_id')
             ->where('appointments.patient_id', (int) $patient->patient_id)
-            ->whereBetween('appointments.start_time', [
-                $dayStart->toDateTimeString(),
-                $dayEnd->toDateTimeString(),
-            ])
+            ->where('appointments.status', '!=', AppointmentStatus::Cancelled->value)
             ->orderBy('appointments.start_time')
             ->get([
                 'appointments.appointment_id',
@@ -93,16 +84,20 @@ final class DashboardController extends Controller
                 && ! $hasLeftReview
                 && $now->greaterThanOrEqualTo($endsAt)
                 && $now->lessThanOrEqualTo($endsAt->addWeek());
+            $canCancel =
+                $status === AppointmentStatus::Scheduled->value
+                && $now->lt($start->subHours(3));
 
             $payload = [
                 'appointment_id' => (int) $row->appointment_id,
                 'doctor_id' => (int) $row->doctor_id,
-                'doctor_name' => 'Dr. '.(string) $row->doctor_name,
+                'doctor_name' => $row->doctor_name ? 'Dr. '.(string) $row->doctor_name : 'Doctor profile unavailable',
                 'start_time' => $start->format('Y-m-d H:i'),
                 'ends_at' => $endsAt->format('Y-m-d H:i'),
                 'status' => $status,
                 'has_left_review' => $hasLeftReview,
                 'can_review' => $canReview,
+                'can_cancel' => $canCancel,
             ];
 
             // Past = ended; Future = not ended (includes "current")
@@ -150,6 +145,7 @@ final class DashboardController extends Controller
                     ->whereNull('patients.deleted_at');
             })
             ->where('appointments.doctor_id', (int) $doctor->doctor_id)
+            ->where('appointments.status', '!=', AppointmentStatus::Cancelled->value)
             ->whereBetween('appointments.start_time', [
                 $dayStart->toDateTimeString(),
                 $dayEnd->toDateTimeString(),
@@ -165,6 +161,7 @@ final class DashboardController extends Controller
             ]);
 
         $past = [];
+        $current = null;
         $future = [];
 
         foreach ($raw as $row) {
@@ -187,9 +184,10 @@ final class DashboardController extends Controller
                 'patient_age' => $age,
             ];
 
-            // Past = ended; Future = not ended (includes "current")
             if ($endsAt->lessThanOrEqualTo($now)) {
                 $past[] = $payload;
+            } elseif ($start->lessThanOrEqualTo($now)) {
+                $current = $payload;
             } else {
                 $future[] = $payload;
             }
@@ -199,6 +197,7 @@ final class DashboardController extends Controller
             'dashboard_type' => 'doctor',
             'appointments' => [
                 'past' => array_values($past),
+                'current' => $current,
                 'future' => array_values($future),
             ],
         ]);

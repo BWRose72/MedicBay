@@ -1,7 +1,7 @@
 <!-- resources/js/pages/DoctorDashboard.vue -->
 <script setup lang="ts">
-import { computed } from 'vue'
 import { router, usePage } from '@inertiajs/vue3'
+import { computed } from 'vue'
 import AppPageLayout from '@/layouts/AppPageLayout.vue'
 
 defineOptions({ layout: AppPageLayout })
@@ -99,62 +99,63 @@ function cancelAppointment(id: number) {
                         </div>
                     </div>
 
-                    <!-- Future -->
-                    <div>
-                        <div class="mb-3 text-lg font-semibold text-foreground">Future</div>
+                    <details class="rounded-2xl bg-card/70 backdrop-blur-sm border border-border">
+                        <summary class="cursor-pointer select-none px-6 py-4 text-lg font-semibold text-foreground">
+                            Past appointments
+                            <span class="ml-2 text-sm text-muted-foreground">
+                                ({{ appointments.past.length }})
+                            </span>
+                        </summary>
 
-                        <div v-if="appointments.future.length" class="space-y-3">
-                            <div v-for="a in appointments.future" :key="a.appointment_id"
-                                class="flex items-stretch overflow-hidden rounded-2xl bg-primary/50 border border-border">
-                                <div
-                                    class="flex w-28 flex-col items-center justify-center gap-3 border-r border-border px-3 py-5">
-                                    <div class="text-xl font-semibold text-foreground">{{ a.time }}</div>
-
-                                    <!-- Cancel button (per future appointment) -->
-                                    <button type="button" class="btn-secondary !px-3 !py-2 text-xs"
-                                        @click="cancelAppointment(a.appointment_id)">
-                                        Cancel
-                                    </button>
-                                </div>
-
-                                <div class="flex flex-1 flex-col justify-center px-5 py-5">
-                                    <div class="text-base font-semibold text-foreground">{{ a.patient_name }}</div>
-                                    <div class="mt-1 text-sm text-foreground/80">
-                                        {{ genderAgeLine(a) }}
-                                    </div>
-                                </div>
+                        <div class="px-6 pb-6 space-y-4">
+                            <div v-if="appointments.past.length === 0" class="text-muted-foreground">
+                                No past appointments today.
                             </div>
-                        </div>
 
-                        <div v-else
-                            class="rounded-2xl bg-card/70 backdrop-blur-sm border border-border p-6 text-muted-foreground">
-                            No future appointments today.
-                        </div>
-                    </div>
-
-                    <!-- Past -->
-                    <div>
-                        <div class="mb-3 text-lg font-semibold text-foreground">Past</div>
-
-                        <div v-if="appointments.past.length" class="space-y-3">
                             <div v-for="a in appointments.past" :key="a.appointment_id"
-                                class="flex items-stretch overflow-hidden rounded-2xl bg-primary/50 border border-border">
-                                <div class="flex w-28 items-center justify-center border-r border-border px-3 py-5">
-                                    <div class="text-xl font-semibold text-foreground">{{ a.time }}</div>
-                                </div>
-
-                                <div class="flex flex-1 flex-col justify-center px-5 py-5">
-                                    <div class="text-base font-semibold text-foreground">{{ a.patient_name }}</div>
-                                    <div class="mt-1 text-sm text-foreground/80">
+                                class="rounded-2xl bg-background/70 p-5 border border-border">
+                                <div>
+                                    <div class="text-base font-semibold text-foreground">
+                                        {{ a.start_time }} — {{ a.patient_name }}
+                                    </div>
+                                    <div class="mt-1 text-sm text-muted-foreground">
                                         {{ genderAgeLine(a) }}
                                     </div>
                                 </div>
                             </div>
                         </div>
+                    </details>
 
-                        <div v-else
-                            class="rounded-2xl bg-card/70 backdrop-blur-sm border border-border p-6 text-muted-foreground">
-                            No past appointments today.
+                    <div class="rounded-2xl bg-card/70 backdrop-blur-sm border border-border p-6">
+                        <div class="text-lg font-semibold text-foreground">
+                            Future appointments
+                            <span class="ml-2 text-sm text-muted-foreground">
+                                ({{ appointments.future.length }})
+                            </span>
+                        </div>
+
+                        <div class="mt-5 space-y-4">
+                            <div v-if="appointments.future.length === 0" class="text-muted-foreground">
+                                No future appointments today.
+                            </div>
+
+                            <div v-for="a in appointments.future" :key="a.appointment_id"
+                                class="rounded-2xl bg-background/70 p-5 flex items-center justify-between gap-4 border border-border">
+                                <div>
+                                    <div class="text-base font-semibold text-foreground">
+                                        {{ a.start_time }} — {{ a.patient_name }}
+                                    </div>
+                                    <div class="mt-1 text-sm text-muted-foreground">
+                                        {{ genderAgeLine(a) }}
+                                    </div>
+                                </div>
+
+                                <button type="button"
+                                    class="rounded-md bg-secondary px-4 py-2 text-sm font-semibold text-secondary-foreground hover:opacity-90"
+                                    @click="cancelAppointment(a.appointment_id)">
+                                    Cancel
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

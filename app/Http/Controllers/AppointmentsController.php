@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use App\Enums\AppointmentStatus;
 use App\Models\Appointment;
 use App\Models\Doctor;
+use App\Models\Patient;
 use App\Services\DoctorScheduleService;
 use Carbon\CarbonImmutable;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -113,6 +114,41 @@ final class AppointmentsController extends Controller
 
         if (!$appointment->start_time->isFuture()) {
             abort(Response::HTTP_UNPROCESSABLE_ENTITY, 'Only future appointments can be cancelled.');
+        }
+
+        $appointment->transitionTo(AppointmentStatus::Cancelled);
+        $appointment->save();
+
+        return back();
+    }
+
+    public function patientCancel(Request $request, Appointment $appointment): RedirectResponse
+    {
+        $user = $request->user();
+
+        if (!$user || !method_exists($user, 'hasRole') || !$user->hasRole('patient')) {
+            abort(Response::HTTP_FORBIDDEN);
+        }
+
+        $patient = Patient::query()
+            ->withoutTrashed()
+            ->where('user_id', (int) $user->getKey())
+            ->firstOrFail();
+
+        if ((int) $appointment->patient_id !== (int) $patient->patient_id) {
+            abort(Response::HTTP_FORBIDDEN);
+        }
+
+        if ($appointment->status !== AppointmentStatus::Scheduled) {
+            abort(Response::HTTP_UNPROCESSABLE_ENTITY, 'Only scheduled appointments can be cancelled.');
+        }
+
+        $timezone = (string) config('app.timezone', 'Europe/Sofia');
+        $start = CarbonImmutable::parse($appointment->start_time, $timezone);
+        $now = CarbonImmutable::now($timezone);
+
+        if ($now->greaterThanOrEqualTo($start->subHours(3))) {
+            abort(Response::HTTP_UNPROCESSABLE_ENTITY, 'Appointments can only be cancelled at least 3 hours before they start.');
         }
 
         $appointment->transitionTo(AppointmentStatus::Cancelled);

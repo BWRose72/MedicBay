@@ -3,3 +3,5 @@ cd C:\Users\BWRose\dev\mariadb
 
 php artisan db:seed --class=RoleSeeder
 php artisan permission:cache-reset
+
+php artisan migrate:fresh --seed
