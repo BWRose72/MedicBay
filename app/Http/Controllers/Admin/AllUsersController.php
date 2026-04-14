@@ -109,10 +109,7 @@ final class AllUsersController extends Controller
                 'bio' => $validated['bio'] ?? null,
             ]);
 
-            // Role: doctor only
-            if (method_exists($user, 'syncRoles')) {
-                $user->syncRoles(['doctor']);
-            }
+            $this->promoteToDoctorRole($user);
         });
 
         return back();
@@ -167,6 +164,17 @@ final class AllUsersController extends Controller
     {
         if (method_exists($user, 'hasRole') && $user->hasRole('admin')) {
             abort(HttpResponse::HTTP_FORBIDDEN);
+        }
+    }
+
+    private function promoteToDoctorRole(User $user): void
+    {
+        if (method_exists($user, 'hasRole') && method_exists($user, 'removeRole') && $user->hasRole('patient')) {
+            $user->removeRole('patient');
+        }
+
+        if (method_exists($user, 'hasRole') && method_exists($user, 'assignRole') && ! $user->hasRole('doctor')) {
+            $user->assignRole('doctor');
         }
     }
 }
