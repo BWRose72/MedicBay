@@ -32,6 +32,10 @@ Route::get('/doctors/{doctor_id}', [DoctorsController::class, 'show'])
     ->middleware(['auth'])
     ->name('doctors.show');
 
+Route::post('/doctors/{doctor_id}/appointments', [AppointmentsController::class, 'store'])
+    ->middleware(['auth'])
+    ->name('appointments.store');
+
 Route::get('/doctors/{doctor_id}/edit', [DoctorsController::class, 'edit'])
     ->middleware(['auth'])
     ->name('doctors.edit');
@@ -40,11 +44,22 @@ Route::patch('/doctors/{doctor_id}', [DoctorsController::class, 'update'])
     ->middleware(['auth'])
     ->name('doctors.update');
 
+Route::patch('/doctors/{doctor_id}/schedule', [DoctorsController::class, 'updateSchedule'])
+    ->middleware(['auth'])
+    ->name('doctors.schedule.update');
+
+Route::patch('/doctors/{doctor_id}/time-offs', [DoctorsController::class, 'updateTimeOffs'])
+    ->middleware(['auth'])
+    ->name('doctors.time-offs.update');
+
+Route::post('/doctors/{doctor_id}/photo', [DoctorsController::class, 'updatePhoto'])
+    ->middleware(['auth'])
+    ->name('doctors.photo.update');
+
 Route::middleware(['auth', 'role:admin'])->group(function () {
 Route::get('/admin/doctors/create', [DoctorsController::class, 'create']);
 Route::get('/admin/doctors', [DoctorsController::class, 'indexAdmin']);
 });
-
 
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
     Route::get('/users', [AllUsersController::class, 'index'])->name('admin.users.index');
@@ -58,5 +73,9 @@ Route::patch('/users/{user}/fire', [AllUsersController::class, 'fire'])
 Route::delete('/users/{user}', [AllUsersController::class, 'destroy'])
         ->name('admin.users.destroy');
 });
+
+Route::get('/about', function () {
+    return Inertia::render('About');
+})->name('about');
 
 require __DIR__.'/settings.php';
