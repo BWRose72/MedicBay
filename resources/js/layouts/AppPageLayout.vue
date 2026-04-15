@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import AppHeaderLayout from '@/layouts/app/AppHeaderLayout.vue';
 import AppFooterLayout from '@/layouts/app/AppFooterLayout.vue';
+import AppHeaderLayout from '@/layouts/app/AppHeaderLayout.vue';
 import type { BreadcrumbItem } from '@/types';
 
 withDefaults(

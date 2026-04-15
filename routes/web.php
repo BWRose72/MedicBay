@@ -22,6 +22,10 @@ Route::patch('/appointments/{appointment}/patient-cancel', [AppointmentsControll
     ->middleware(['auth'])
     ->name('appointments.patientCancel');
 
+Route::post('/appointments/{appointment}/review', [AppointmentsController::class, 'leaveReview'])
+    ->middleware(['auth'])
+    ->name('appointments.leaveReview');
+
 Route::middleware(['auth', 'role:doctor|admin'])->group(function () {
 Route::patch('/appointments/{appointment}/status', [AppointmentsController::class, 'updateStatus'])
         ->name('appointments.updateStatus');

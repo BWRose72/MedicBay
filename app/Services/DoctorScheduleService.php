@@ -72,6 +72,10 @@ final class DoctorScheduleService
                     'bookable' => $isBookable,
                     'patient_id' => $appointment ? (int) $appointment->patient_id : null,
                     'patient_name' => $appointment?->patient?->name,
+                    'patient_gender' => $appointment?->patient?->gender,
+                    'patient_dob' => $appointment?->patient?->date_of_birth?->format('Y-m-d'),
+                    'patient_phone' => $appointment?->patient?->phone,
+                    'patient_mrn' => $appointment?->patient?->medical_record_number,
                 ]);
             }
         }

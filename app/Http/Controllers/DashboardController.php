@@ -57,6 +57,7 @@ final class DashboardController extends Controller
 
         $rows = DB::table('appointments')
             ->leftJoin('doctors', 'appointments.doctor_id', '=', 'doctors.doctor_id')
+            ->leftJoin('reviews', 'reviews.appointment_id', '=', 'appointments.appointment_id')
             ->where('appointments.patient_id', (int) $patient->patient_id)
             ->where('appointments.status', '!=', AppointmentStatus::Cancelled->value)
             ->orderBy('appointments.start_time')
@@ -67,9 +68,12 @@ final class DashboardController extends Controller
                 'appointments.status',
                 'appointments.has_left_review',
                 'doctors.name as doctor_name',
+                'reviews.attitude as review_attitude',
+                'reviews.professionalism as review_professionalism',
             ]);
 
         $past = [];
+        $current = null;
         $future = [];
 
         foreach ($rows as $row) {
@@ -98,11 +102,19 @@ final class DashboardController extends Controller
                 'has_left_review' => $hasLeftReview,
                 'can_review' => $canReview,
                 'can_cancel' => $canCancel,
+                'review_attitude' => $row->review_attitude !== null ? (int) $row->review_attitude : null,
+                'review_professionalism' => $row->review_professionalism !== null ? (int) $row->review_professionalism : null,
             ];
 
-            // Past = ended; Future = not ended (includes "current")
+            $isCurrent = $status === AppointmentStatus::Scheduled->value
+                && $start->lessThanOrEqualTo($now)
+                && $now->lessThan($endsAt);
+
+            // Past = ended; Current = active scheduled slot; Future = upcoming.
             if ($endsAt->lessThanOrEqualTo($now)) {
                 $past[] = $payload;
+            } elseif ($isCurrent) {
+                $current = $payload;
             } else {
                 $future[] = $payload;
             }
@@ -112,6 +124,7 @@ final class DashboardController extends Controller
             'dashboard_type' => 'patient',
             'appointments' => [
                 'past' => array_values($past),
+                'current' => $current,
                 'future' => array_values($future),
             ],
         ]);
@@ -167,6 +180,7 @@ final class DashboardController extends Controller
         foreach ($raw as $row) {
             $start = CarbonImmutable::parse($row->start_time, $tz);
             $endsAt = $start->addMinutes(30);
+            $status = (string) $row->status;
 
             $age = null;
             if (! empty($row->patient_dob)) {
@@ -178,16 +192,25 @@ final class DashboardController extends Controller
                 'start_time' => $start->format('Y-m-d H:i'),
                 'time' => $start->format('H:i'),
                 'ends_at' => $endsAt->format('Y-m-d H:i'),
-                'status' => (string) $row->status,
+                'status' => $status,
                 'patient_name' => (string) $row->patient_name,
                 'patient_gender' => (string) $row->patient_gender,
                 'patient_age' => $age,
             ];
 
+            $isCurrentTimeslot = $status === AppointmentStatus::Scheduled->value
+                && $start->lessThanOrEqualTo($now)
+                && $now->lessThan($endsAt);
+
+            if ($isCurrentTimeslot) {
+                $current = $payload;
+            }
+
             if ($endsAt->lessThanOrEqualTo($now)) {
                 $past[] = $payload;
-            } elseif ($start->lessThanOrEqualTo($now)) {
-                $current = $payload;
+            } elseif ($isCurrentTimeslot) {
+                // Keep current appointment out of the future list.
+                continue;
             } else {
                 $future[] = $payload;
             }

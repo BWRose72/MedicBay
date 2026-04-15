@@ -71,6 +71,7 @@ final class DoctorsController extends Controller
         int $doctor_id,
         DoctorServices $doctorServices,
         DoctorScheduleService $doctorScheduleService,
+        ReviewServices $reviewServices,
     ): Response {
         $doctor = $doctorServices->findOrFail($doctor_id);
         $doctor->load('specialisation');
@@ -85,6 +86,36 @@ final class DoctorsController extends Controller
             : CarbonImmutable::now($timezone)->startOfDay();
 
         $slots = $doctorScheduleService->slotsForDate((int) $doctor->doctor_id, $selectedDate);
+        $ratingSummary = $reviewServices->publicDoctorRatingSummary((int) $doctor->doctor_id);
+        $ratings = DB::table('reviews')
+            ->leftJoin('appointments', 'reviews.appointment_id', '=', 'appointments.appointment_id')
+            ->leftJoin('patients', 'reviews.patient_id', '=', 'patients.patient_id')
+            ->where('reviews.doctor_id', (int) $doctor->doctor_id)
+            ->orderByDesc('appointments.start_time')
+            ->orderByDesc('reviews.review_id')
+            ->get([
+                'reviews.review_id',
+                'reviews.attitude',
+                'reviews.professionalism',
+                'appointments.start_time as appointment_start_time',
+                'patients.name as patient_name',
+            ])
+            ->map(function ($row) use ($timezone) {
+                $appointmentDate = $row->appointment_start_time !== null
+                    ? CarbonImmutable::parse((string) $row->appointment_start_time, $timezone)->format('Y-m-d H:i')
+                    : null;
+
+                return [
+                    'review_id' => (int) $row->review_id,
+                    'attitude' => (int) $row->attitude,
+                    'professionalism' => (int) $row->professionalism,
+                    'appointment_date' => $appointmentDate,
+                    'patient_name' => $row->patient_name !== null
+                        ? (string) $row->patient_name
+                        : 'Unknown patient',
+                ];
+            })
+            ->values();
 
         $user = $request->user();
 
@@ -95,6 +126,10 @@ final class DoctorsController extends Controller
                 $user->hasRole('admin')
                 || ($user->hasRole('doctor') && (int) $doctor->user_id === (int) $user->getKey())
             );
+
+        $isAdmin = $user !== null
+            && method_exists($user, 'hasRole')
+            && $user->hasRole('admin');
 
         return Inertia::render('Doctors/Show', [
             'doctor' => [
@@ -108,10 +143,16 @@ final class DoctorsController extends Controller
                 ],
                 'phone' => (string) ($doctor->phone ?? ''),
                 'bio' => (string) ($doctor->bio ?? ''),
+                'rating' => $ratingSummary === null ? null : [
+                    'attitude_avg' => $ratingSummary['attitude_avg'],
+                    'professionalism_avg' => $ratingSummary['professionalism_avg'],
+                    'reviews_count' => $ratingSummary['reviews_count'],
+                ],
             ],
             'can_edit' => $canEdit,
             'selected_date' => $selectedDate->format('Y-m-d'),
             'slots' => $slots,
+            'ratings' => $isAdmin ? $ratings : [],
         ]);
     }
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import AppPageLayout from '@/layouts/AppPageLayout.vue';
 
 defineOptions({ layout: AppPageLayout });
@@ -13,6 +13,11 @@ type DoctorPublic = {
     specialisation: { specialisation_id: number; name: string };
     phone: string;
     bio: string;
+    rating: {
+        attitude_avg: number | null;
+        professionalism_avg: number | null;
+        reviews_count: number;
+    } | null;
 };
 
 type AuthUser = {
@@ -30,6 +35,18 @@ type AppointmentSlot = {
     bookable: boolean;
     patient_id: number | null;
     patient_name: string | null;
+    patient_gender: string | null;
+    patient_dob: string | null;
+    patient_phone: string | null;
+    patient_mrn: string | null;
+};
+
+type DoctorRatingItem = {
+    review_id: number;
+    attitude: number;
+    professionalism: number;
+    appointment_date: string | null;
+    patient_name: string;
 };
 
 const props = defineProps<{
@@ -37,6 +54,7 @@ const props = defineProps<{
     can_edit: boolean;
     selected_date: string;
     slots: AppointmentSlot[];
+    ratings: DoctorRatingItem[];
 }>();
 
 const page = usePage();
@@ -62,6 +80,7 @@ const isAdmin = computed(() => authUser.value?.is_admin === true || authRoles.va
 const isDoctor = computed(() => authRoles.value.includes('doctor'));
 const isPatient = computed(() => authRoles.value.includes('patient'));
 const canSeePatientNames = computed(() => isAdmin.value || isDoctor.value);
+const expandedSlotKey = ref<string | null>(null);
 const slotError = computed(() => {
     const errors = page.props.errors as Record<string, string> | undefined;
 
@@ -112,11 +131,11 @@ function slotClasses(slot: AppointmentSlot): string {
     const base = 'w-full rounded-md border px-4 py-3 text-left transition flex items-center justify-between gap-3';
 
     if (slot.taken) {
-        return `${base} border-border bg-muted/70 text-muted-foreground cursor-not-allowed`;
+        return `${base} border-border bg-muted/70 text-muted-foreground`;
     }
 
     if (!slot.bookable) {
-        return `${base} border-border bg-background/40 text-muted-foreground cursor-not-allowed`;
+        return `${base} border-border bg-background/40 text-muted-foreground`;
     }
 
     if (isPatient.value) {
@@ -132,6 +151,53 @@ function doctorImageUrl(doctorId: number): string {
 function fallbackDoctorImage(): string {
     return `/storage/doctors/0.jpg`;
 }
+
+function togglePatientSummary(slot: AppointmentSlot): void {
+    if (!canSeePatientNames.value || !slot.taken) {
+        return;
+    }
+
+    expandedSlotKey.value = expandedSlotKey.value === slot.start ? null : slot.start;
+}
+
+function isPatientSummaryOpen(slot: AppointmentSlot): boolean {
+    return expandedSlotKey.value === slot.start;
+}
+
+function isSlotInteractive(slot: AppointmentSlot): boolean {
+    return (isPatient.value && slot.bookable && !slot.taken) || (slot.taken && canSeePatientNames.value);
+}
+
+function handleSlotClick(slot: AppointmentSlot): void {
+    if (slot.taken && canSeePatientNames.value) {
+        togglePatientSummary(slot);
+        return;
+    }
+
+    bookSlot(slot);
+}
+
+function patientAge(slot: AppointmentSlot): string {
+    if (!slot.patient_dob) {
+        return '-';
+    }
+
+    const dob = new Date(slot.patient_dob);
+
+    if (Number.isNaN(dob.getTime())) {
+        return '-';
+    }
+
+    const now = new Date();
+    let age = now.getFullYear() - dob.getFullYear();
+    const monthDiff = now.getMonth() - dob.getMonth();
+
+    if (monthDiff < 0 || (monthDiff === 0 && now.getDate() < dob.getDate())) {
+        age--;
+    }
+
+    return age >= 0 ? String(age) : '-';
+}
 </script>
 
 <template>
@@ -141,7 +207,6 @@ function fallbackDoctorImage(): string {
     <div class="content-wrap">
         <div class="content-bg"></div>
         <div class="content-overlay"></div>
-
         <div class="content-foreground">
             <div class="container-main section-spacing">
                 <div class="flex items-center justify-between gap-4">
@@ -177,6 +242,18 @@ function fallbackDoctorImage(): string {
                         <!-- Larger white information box -->
                         <div class="rounded-2xl bg-card p-8">
                             <div class="mt-6 space-y-6 text-base">
+                                <div>
+                                    <div class="font-semibold text-foreground text-lg">Average ratings</div>
+                                    <div class="mt-2 text-muted-foreground" v-if="props.doctor.rating">
+                                        Professionalism: {{ props.doctor.rating.professionalism_avg !== null ? props.doctor.rating.professionalism_avg.toFixed(1) : '-' }},
+                                        <br />
+                                        Attitude: {{ props.doctor.rating.attitude_avg !== null ? props.doctor.rating.attitude_avg.toFixed(1) : '-' }}
+                                        <span class="ml-2 text-sm">({{ props.doctor.rating.reviews_count }} reviews)</span>
+                                    </div>
+                                    <div class="mt-2 text-muted-foreground" v-else>
+                                        Not enough ratings.
+                                    </div>
+                                </div>
                                 <div>
                                     <div class="font-semibold text-foreground text-lg">Phone</div>
                                     <div class="mt-2 text-muted-foreground">
@@ -230,29 +307,55 @@ function fallbackDoctorImage(): string {
                                         v-for="slot in props.slots"
                                         :key="slot.start"
                                         :class="slotClasses(slot)"
-                                        :role="isPatient && slot.bookable && !slot.taken ? 'button' : undefined"
-                                        :tabindex="isPatient && slot.bookable && !slot.taken ? 0 : undefined"
-                                        :aria-disabled="!isPatient || !slot.bookable || slot.taken"
-                                        @click="bookSlot(slot)"
-                                        @keydown.enter.prevent="bookSlot(slot)"
-                                        @keydown.space.prevent="bookSlot(slot)"
+                                        :role="isSlotInteractive(slot) ? 'button' : undefined"
+                                        :tabindex="isSlotInteractive(slot) ? 0 : undefined"
+                                        :aria-disabled="!isSlotInteractive(slot)"
+                                        @click="handleSlotClick(slot)"
+                                        @keydown.enter.prevent="handleSlotClick(slot)"
+                                        @keydown.space.prevent="handleSlotClick(slot)"
                                     >
-                                        <span class="font-semibold">
-                                            {{ slot.time }}
-                                        </span>
+                                        <div class="flex items-center justify-between gap-3">
+                                            <span class="font-semibold">
+                                                {{ slot.time }}
+                                            </span>
 
-                                        <span class="min-w-0 text-right text-sm">
-                                            <template v-if="slot.taken && canSeePatientNames">
-                                                <span class="mr-2 text-muted-foreground">Patient</span>
-                                                <a href="#" class="font-semibold underline underline-offset-4" @click.prevent>
+                                            <span class="min-w-0 text-right text-sm">
+                                                <template v-if="slot.taken && canSeePatientNames">
+                                                    <span v-if="!isPatientSummaryOpen(slot)" class="font-semibold">
+                                                        {{ slot.patient_name ?? 'Unknown patient' }}
+                                                    </span>
+                                                </template>
+
+                                                <template v-else>
+                                                    {{ slotStatus(slot) }}
+                                                </template>
+                                            </span>
+                                        </div>
+
+                                        <div v-if="isPatientSummaryOpen(slot)" class="mt-3 border-t border-border/70 pt-3 text-sm text-muted-foreground">
+                                            <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                                <div>
+                                                    <span class="font-semibold text-foreground">Name:</span>
                                                     {{ slot.patient_name ?? 'Unknown patient' }}
-                                                </a>
-                                            </template>
-
-                                            <template v-else>
-                                                {{ slotStatus(slot) }}
-                                            </template>
-                                        </span>
+                                                </div>
+                                                <div>
+                                                    <span class="font-semibold text-foreground">Gender:</span>
+                                                    {{ slot.patient_gender ?? '-' }}
+                                                </div>
+                                                <div>
+                                                    <span class="font-semibold text-foreground">Age:</span>
+                                                    {{ patientAge(slot) }}
+                                                </div>
+                                                <div>
+                                                    <span class="font-semibold text-foreground">Phone:</span>
+                                                    {{ slot.patient_phone ?? '-' }}
+                                                </div>
+                                                <div class="sm:col-span-2">
+                                                    <span class="font-semibold text-foreground">Medical record №:</span>
+                                                    {{ slot.patient_mrn ?? '-' }}
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </template>
@@ -268,6 +371,40 @@ function fallbackDoctorImage(): string {
 
                 </div>
 
+                <details v-if="isAdmin" class="mt-10 rounded-2xl bg-card/70 backdrop-blur-sm border border-border">
+                    <summary class="cursor-pointer select-none px-6 py-4 text-lg font-semibold text-foreground">
+                        All ratings
+                        <span class="ml-2 text-sm text-muted-foreground">
+                            ({{ props.ratings.length }})
+                        </span>
+                    </summary>
+
+                    <div class="px-6 pb-6">
+                        <div v-if="props.ratings.length === 0" class="text-muted-foreground">
+                            No ratings yet.
+                        </div>
+
+                        <div v-else class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+                            <div
+                                v-for="rating in props.ratings"
+                                :key="rating.review_id"
+                                class="rounded-2xl border border-border bg-background/70 p-5"
+                            >
+                                <div class="text-sm text-muted-foreground">
+                                    {{ rating.appointment_date ?? 'Unknown date' }}
+                                </div>
+                                <div class="mt-2 text-base font-semibold text-foreground">
+                                    {{ rating.patient_name }}
+                                </div>
+                                <div class="mt-3 text-sm text-muted-foreground">
+                                    Professionalism: {{ rating.professionalism }}
+                                    <br />
+                                    Attitude: {{ rating.attitude }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </details>
             </div>
         </div>
     </div>

@@ -1,7 +1,7 @@
 <!-- resources/js/pages/DoctorDashboard.vue -->
 <script setup lang="ts">
 import { router, usePage } from '@inertiajs/vue3'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import AppPageLayout from '@/layouts/AppPageLayout.vue'
 
 defineOptions({ layout: AppPageLayout })
@@ -28,6 +28,8 @@ const props = defineProps<{
 }>()
 
 const page = usePage()
+const cancellingAppointmentIds = ref<Set<number>>(new Set())
+const hiddenFutureAppointmentIds = ref<Set<number>>(new Set())
 const appointments = computed<DoctorPayload>(() => {
     return (
         props.appointments ??
@@ -38,6 +40,9 @@ const appointments = computed<DoctorPayload>(() => {
         }
     )
 })
+const visibleFutureAppointments = computed<DoctorAppointmentBox[]>(() =>
+    appointments.value.future.filter((a) => !hiddenFutureAppointmentIds.value.has(a.appointment_id)),
+)
 
 function genderAgeLine(a: DoctorAppointmentBox): string {
     const g = (a.patient_gender || '').trim()
@@ -50,7 +55,54 @@ function genderAgeLine(a: DoctorAppointmentBox): string {
 }
 
 function cancelAppointment(id: number) {
-    router.patch(`/appointments/${id}/cancel`, {}, { preserveScroll: true })
+    if (cancellingAppointmentIds.value.has(id)) {
+        return
+    }
+
+    hiddenFutureAppointmentIds.value = new Set(hiddenFutureAppointmentIds.value).add(id)
+    cancellingAppointmentIds.value = new Set(cancellingAppointmentIds.value).add(id)
+
+    router.patch(`/appointments/${id}/cancel`, {}, {
+        preserveScroll: true,
+        onSuccess: () => {
+            router.reload({
+                only: ['appointments'],
+            })
+        },
+        onError: () => {
+            const hiddenNext = new Set(hiddenFutureAppointmentIds.value)
+            hiddenNext.delete(id)
+            hiddenFutureAppointmentIds.value = hiddenNext
+        },
+        onFinish: () => {
+            const next = new Set(cancellingAppointmentIds.value)
+            next.delete(id)
+            cancellingAppointmentIds.value = next
+        },
+    })
+}
+
+function isCancellingAppointment(id: number): boolean {
+    return cancellingAppointmentIds.value.has(id)
+}
+
+function statusLabel(status?: string): string {
+    const value = (status ?? '').trim().toLowerCase()
+
+    if (value === 'completed') return 'Completed'
+    if (value === 'cancelled') return 'Cancelled'
+    if (value === 'no_show') return "Didn't show up"
+    return 'Scheduled'
+}
+
+function setAppointmentStatus(id: number, status: string) {
+    router.patch(
+        `/appointments/${id}/status`,
+        { status },
+        {
+            preserveScroll: true,
+        },
+    )
 }
 </script>
 
@@ -66,12 +118,11 @@ function cancelAppointment(id: number) {
                         Dashboard
                     </h1>
                     <p class="mt-2 text-base text-muted-foreground">
-                        Today’s appointments
+                        Today's appointments
                     </p>
                 </div>
 
                 <div class="mt-10 space-y-10">
-                    <!-- Current -->
                     <div>
                         <div class="mb-3 text-lg font-semibold text-foreground">Current</div>
 
@@ -89,6 +140,9 @@ function cancelAppointment(id: number) {
                                 </div>
                                 <div class="mt-1 text-sm text-foreground/80">
                                     {{ genderAgeLine(appointments.current) }}
+                                </div>
+                                <div class="mt-1 text-sm text-muted-foreground">
+                                    Status: {{ statusLabel(appointments.current.status) }}
                                 </div>
                             </div>
                         </div>
@@ -113,13 +167,32 @@ function cancelAppointment(id: number) {
                             </div>
 
                             <div v-for="a in appointments.past" :key="a.appointment_id"
-                                class="rounded-2xl bg-background/70 p-5 border border-border">
-                                <div>
+                                class="rounded-2xl bg-background/70 p-5 border border-border flex items-center justify-between gap-4">
+                                <div class="min-w-0">
                                     <div class="text-base font-semibold text-foreground">
-                                        {{ a.start_time }} — {{ a.patient_name }}
+                                        {{ a.start_time }} - {{ a.patient_name }}
                                     </div>
                                     <div class="mt-1 text-sm text-muted-foreground">
                                         {{ genderAgeLine(a) }}
+                                    </div>
+                                    <div class="mt-1 text-sm text-muted-foreground">
+                                        Status: {{ statusLabel(a.status) }}
+                                    </div>
+                                </div>
+
+                                <div class="shrink-0">
+                                    <select v-if="(a.status ?? 'scheduled') === 'scheduled'"
+                                        class="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground"
+                                        :value="a.status ?? 'scheduled'"
+                                        @change="setAppointmentStatus(a.appointment_id, String(($event.target as HTMLSelectElement).value))">
+                                        <option disabled value="scheduled">Set status...</option>
+                                        <option value="completed">Completed</option>
+                                        <option value="cancelled">Cancelled</option>
+                                        <option value="no_show">Didn't show up</option>
+                                    </select>
+
+                                    <div v-else class="rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white">
+                                        {{ statusLabel(a.status) }}
                                     </div>
                                 </div>
                             </div>
@@ -130,30 +203,34 @@ function cancelAppointment(id: number) {
                         <div class="text-lg font-semibold text-foreground">
                             Future appointments
                             <span class="ml-2 text-sm text-muted-foreground">
-                                ({{ appointments.future.length }})
+                                ({{ visibleFutureAppointments.length }})
                             </span>
                         </div>
 
                         <div class="mt-5 space-y-4">
-                            <div v-if="appointments.future.length === 0" class="text-muted-foreground">
+                            <div v-if="visibleFutureAppointments.length === 0" class="text-muted-foreground">
                                 No future appointments today.
                             </div>
 
-                            <div v-for="a in appointments.future" :key="a.appointment_id"
+                            <div v-for="a in visibleFutureAppointments" :key="a.appointment_id"
                                 class="rounded-2xl bg-background/70 p-5 flex items-center justify-between gap-4 border border-border">
                                 <div>
                                     <div class="text-base font-semibold text-foreground">
-                                        {{ a.start_time }} — {{ a.patient_name }}
+                                        {{ a.start_time }} - {{ a.patient_name }}
                                     </div>
                                     <div class="mt-1 text-sm text-muted-foreground">
                                         {{ genderAgeLine(a) }}
                                     </div>
+                                    <div class="mt-1 text-sm text-muted-foreground">
+                                        Status: {{ statusLabel(a.status) }}
+                                    </div>
                                 </div>
 
                                 <button type="button"
-                                    class="rounded-md bg-secondary px-4 py-2 text-sm font-semibold text-secondary-foreground hover:opacity-90"
+                                    class="rounded-md bg-secondary px-4 py-2 text-sm font-semibold text-secondary-foreground hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+                                    :disabled="isCancellingAppointment(a.appointment_id)"
                                     @click="cancelAppointment(a.appointment_id)">
-                                    Cancel
+                                    {{ isCancellingAppointment(a.appointment_id) ? 'Cancelling...' : 'Cancel' }}
                                 </button>
                             </div>
                         </div>

@@ -16,6 +16,7 @@ class Review extends Model
     protected $keyType = 'int';
 
     protected $fillable = [
+        'appointment_id',
         'patient_id',
         'doctor_id',
         'attitude',
@@ -26,6 +27,11 @@ class Review extends Model
     public function patient(): BelongsTo
     {
         return $this->belongsTo(Patient::class, 'patient_id');
+    }
+
+    public function appointment(): BelongsTo
+    {
+        return $this->belongsTo(Appointment::class, 'appointment_id', 'appointment_id');
     }
 
     public function doctor(): BelongsTo

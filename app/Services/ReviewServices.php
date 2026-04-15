@@ -91,6 +91,7 @@ final class ReviewServices
             }
 
             $review = Review::create([
+                'appointment_id' => (int) $locked->getKey(),
                 'patient_id' => (int) $patient->patient_id,
                 'doctor_id' => (int) $locked->doctor_id,
                 'attitude' => $attitude,
@@ -154,8 +155,8 @@ final class ReviewServices
 
     private function assertRatingRange(int $value, string $field): void
     {
-        if ($value < 0 || $value > 10) {
-            throw new InvalidArgumentException("{$field} must be between 0 and 10.");
+        if ($value < 1 || $value > 10) {
+            throw new InvalidArgumentException("{$field} must be between 1 and 10.");
         }
     }
 }

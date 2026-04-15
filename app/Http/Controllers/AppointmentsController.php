@@ -9,6 +9,7 @@ use App\Models\Appointment;
 use App\Models\Doctor;
 use App\Models\Patient;
 use App\Services\DoctorScheduleService;
+use App\Services\ReviewServices;
 use Carbon\CarbonImmutable;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\RedirectResponse;
@@ -56,7 +57,13 @@ final class AppointmentsController extends Controller
             abort(Response::HTTP_FORBIDDEN);
         }
 
-        if ($user->hasRole('doctor')) {
+        $isDoctor = $user->hasRole('doctor');
+        $isAdmin = $user->hasRole('admin');
+        $timezone = (string) config('app.timezone', 'Europe/Sofia');
+        $start = CarbonImmutable::parse($appointment->start_time, $timezone);
+        $endsAt = CarbonImmutable::parse($appointment->ends_at, $timezone);
+
+        if ($isDoctor && !$isAdmin) {
             $doctor = Doctor::query()
                 ->withoutTrashed()
                 ->where('user_id', (int) $user->getKey())
@@ -65,25 +72,32 @@ final class AppointmentsController extends Controller
             if ((int) $appointment->doctor_id !== (int) $doctor->doctor_id) {
                 abort(Response::HTTP_FORBIDDEN);
             }
-        }
 
-        if ($appointment->status !== AppointmentStatus::Scheduled) {
-            abort(Response::HTTP_UNPROCESSABLE_ENTITY, 'Only scheduled appointments can be updated.');
-        }
+            if ($appointment->status !== AppointmentStatus::Scheduled) {
+                abort(Response::HTTP_UNPROCESSABLE_ENTITY, 'You can only set the status once for a scheduled appointment.');
+            }
 
-        if (!$appointment->ends_at->isPast() && !$appointment->ends_at->isToday()) {
-            abort(Response::HTTP_UNPROCESSABLE_ENTITY, 'Only past appointments can be marked as Completed or NoShow.');
-        }
-        if ($appointment->ends_at->isFuture()) {
-            abort(Response::HTTP_UNPROCESSABLE_ENTITY, 'Only past appointments can be marked as Completed or NoShow.');
+            if (!$start->isToday() || $endsAt->isFuture()) {
+                abort(Response::HTTP_UNPROCESSABLE_ENTITY, 'Doctors can only set status for today\'s past appointments.');
+            }
         }
 
         $validated = $request->validate([
-            'status' => ['required', Rule::in([AppointmentStatus::Completed->value, AppointmentStatus::NoShow->value])],
+            'status' => ['required', Rule::in([
+                AppointmentStatus::Completed->value,
+                AppointmentStatus::Cancelled->value,
+                AppointmentStatus::NoShow->value,
+            ])],
         ]);
 
         $to = AppointmentStatus::from((string) $validated['status']);
-        $appointment->transitionTo($to);
+
+        if ($isDoctor && !$isAdmin) {
+            $appointment->transitionTo($to);
+        } else {
+            $appointment->status = $to;
+        }
+
         $appointment->save();
 
         return back();
@@ -106,6 +120,10 @@ final class AppointmentsController extends Controller
             if ((int) $appointment->doctor_id !== (int) $doctor->doctor_id) {
                 abort(Response::HTTP_FORBIDDEN);
             }
+        }
+
+        if ($appointment->status === AppointmentStatus::Cancelled) {
+            return back();
         }
 
         if ($appointment->status !== AppointmentStatus::Scheduled) {
@@ -139,6 +157,10 @@ final class AppointmentsController extends Controller
             abort(Response::HTTP_FORBIDDEN);
         }
 
+        if ($appointment->status === AppointmentStatus::Cancelled) {
+            return back();
+        }
+
         if ($appointment->status !== AppointmentStatus::Scheduled) {
             abort(Response::HTTP_UNPROCESSABLE_ENTITY, 'Only scheduled appointments can be cancelled.');
         }
@@ -153,6 +175,37 @@ final class AppointmentsController extends Controller
 
         $appointment->transitionTo(AppointmentStatus::Cancelled);
         $appointment->save();
+
+        return back();
+    }
+
+    public function leaveReview(Request $request, Appointment $appointment, ReviewServices $reviewServices): RedirectResponse
+    {
+        $user = $request->user();
+
+        if (!$user) {
+            abort(Response::HTTP_FORBIDDEN);
+        }
+
+        $validated = $request->validate([
+            'attitude' => ['required', 'integer', 'min:1', 'max:10'],
+            'professionalism' => ['required', 'integer', 'min:1', 'max:10'],
+        ]);
+
+        try {
+            $reviewServices->leaveReview(
+                actor: $user,
+                appointmentId: (int) $appointment->getKey(),
+                attitude: (int) $validated['attitude'],
+                professionalism: (int) $validated['professionalism'],
+            );
+        } catch (AuthorizationException) {
+            abort(Response::HTTP_FORBIDDEN);
+        } catch (InvalidArgumentException $exception) {
+            return back()->withErrors([
+                'review' => $exception->getMessage(),
+            ]);
+        }
 
         return back();
     }
