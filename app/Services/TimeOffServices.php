@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use InvalidArgumentException;
 
-final class DoctorTimeOffService
+final class TimeOffServices
 {
     public function createTimeOffAndCancelAppointments(
         User $actor,
@@ -110,7 +110,7 @@ final class DoctorTimeOffService
             ->where('doctor_id', (int) $doctor->doctor_id)
             ->where('status', AppointmentStatus::Scheduled)
             ->where('start_time', '<', $end)
-            ->whereRaw('DATE_ADD(start_time, INTERVAL 30 MINUTE) > ?', [$start->toDateTimeString()])
+            ->where('start_time', '>', $start->subMinutes(30))
             ->lockForUpdate()
             ->get();
 

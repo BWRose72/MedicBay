@@ -13,7 +13,7 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
 
-final class PatientsAppointments
+final class PatientAppointments
 {
     public function upcoming(User $actor, int $patientId): Collection
     {
@@ -35,14 +35,7 @@ final class PatientsAppointments
             ->where('start_time', '>', $now)
             ->orderBy('start_time')
             ->get()
-            ->map(function (Appointment $a) {
-                return [
-                    'appointment_id' => (int) $a->getKey(),
-                    'doctor_id' => (int) $a->doctor_id,
-                    'start_time' => CarbonImmutable::parse($a->start_time, $timezone)->format('Y-m-d H:i:s'),
-                    'status' => $a->status instanceof AppointmentStatus ? $a->status->value : (string) $a->status,
-                ];
-            })
+            ->map(fn (Appointment $appointment) => $this->appointmentPayload($appointment, $timezone, includeStatus: true))
             ->values();
     }
 
@@ -109,13 +102,24 @@ final class PatientsAppointments
             ->where('start_time', '<', $now)
             ->orderByDesc('start_time')
             ->get()
-            ->map(function (Appointment $a) {
-                return [
-                    'appointment_id' => (int) $a->getKey(),
-                    'doctor_id' => (int) $a->doctor_id,
-                    'start_time' => CarbonImmutable::parse($a->start_time, $timezone)->format('Y-m-d H:i:s'),
-                ];
-            })
+            ->map(fn (Appointment $appointment) => $this->appointmentPayload($appointment, $timezone))
             ->values();
+    }
+
+    private function appointmentPayload(Appointment $appointment, string $timezone, bool $includeStatus = false): array
+    {
+        $payload = [
+            'appointment_id' => (int) $appointment->getKey(),
+            'doctor_id' => (int) $appointment->doctor_id,
+            'start_time' => CarbonImmutable::parse($appointment->start_time, $timezone)->format('Y-m-d H:i:s'),
+        ];
+
+        if ($includeStatus) {
+            $payload['status'] = $appointment->status instanceof AppointmentStatus
+                ? $appointment->status->value
+                : (string) $appointment->status;
+        }
+
+        return $payload;
     }
 }

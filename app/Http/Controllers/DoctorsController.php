@@ -482,7 +482,6 @@ final class DoctorsController extends Controller
         $canvas = imagecreatetruecolor($width, $height);
 
         if ($canvas === false) {
-            imagedestroy($sourceImage);
             abort(HttpResponse::HTTP_UNPROCESSABLE_ENTITY, 'The uploaded image could not be processed.');
         }
 
@@ -491,12 +490,7 @@ final class DoctorsController extends Controller
         imagecopy($canvas, $sourceImage, 0, 0, 0, 0, $width, $height);
 
         if (! imagejpeg($canvas, $targetPath, 90)) {
-            imagedestroy($sourceImage);
-            imagedestroy($canvas);
             abort(HttpResponse::HTTP_UNPROCESSABLE_ENTITY, 'The uploaded image could not be saved.');
         }
-
-        imagedestroy($sourceImage);
-        imagedestroy($canvas);
     }
 }
