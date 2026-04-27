@@ -12,6 +12,7 @@ type UserRow = {
     email: string;
     type: 'patient' | 'doctor' | 'unknown';
     doctor_id: number | null;
+    phone: string | null;
 };
 
 const props = defineProps<{
@@ -44,7 +45,7 @@ const showMakeDoctor = useForm<{ open: boolean }>({ open: false });
 function openMakeDoctor(u: UserRow) {
     makeDoctorForm.user_id = u.user_id;
     makeDoctorForm.name = u.name;
-    makeDoctorForm.phone = '';
+    makeDoctorForm.phone = u.phone ?? '';
     makeDoctorForm.bio = '';
     makeDoctorForm.specialisation_id = props.specialisations[0]?.specialisation_id ?? 0;
     showMakeDoctor.open = true;

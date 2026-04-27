@@ -2,13 +2,10 @@
 
 namespace App\Http\Controllers\Settings;
 
-use App\Enums\AppointmentStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\ProfileDeleteRequest;
 use App\Http\Requests\Settings\ProfileUpdateRequest;
-use App\Models\Appointment;
 use App\Models\Patient;
-use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -52,23 +49,14 @@ class ProfileController extends Controller
     public function destroy(ProfileDeleteRequest $request): RedirectResponse
     {
         $user = $request->user();
-        $timezone = (string) config('app.timezone', 'Europe/Sofia');
 
-        DB::transaction(function () use ($user, $timezone) {
+        DB::transaction(function () use ($user) {
             $patient = Patient::query()
                 ->withoutTrashed()
                 ->where('user_id', (int) $user->getKey())
                 ->first();
 
             if ($patient) {
-                Appointment::query()
-                    ->where('patient_id', (int) $patient->patient_id)
-                    ->where('status', AppointmentStatus::Scheduled)
-                    ->where('start_time', '>', CarbonImmutable::now($timezone))
-                    ->update([
-                        'status' => AppointmentStatus::Cancelled->value,
-                    ]);
-
                 $patient->delete();
             }
 

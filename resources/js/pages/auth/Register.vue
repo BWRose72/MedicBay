@@ -26,7 +26,7 @@ import { store } from '@/routes/register';
         >
             <div class="grid gap-6">
                 <div class="grid gap-2">
-                    <Label for="name">Name</Label>
+                    <Label for="name">Name <span class="text-red-500">*</span></Label>
                     <Input
                         id="name"
                         type="text"
@@ -41,7 +41,7 @@ import { store } from '@/routes/register';
                 </div>
 
                 <div class="grid gap-2">
-                    <Label for="email">Email address</Label>
+                    <Label for="email">Email address <span class="text-red-500">*</span></Label>
                     <Input
                         id="email"
                         type="email"
@@ -55,7 +55,7 @@ import { store } from '@/routes/register';
                 </div>
 
                 <div class="grid gap-2">
-                    <Label for="gender">Gender</Label>
+                    <Label for="gender">Gender <span class="text-red-500">*</span></Label>
                     <Input
                         id="gender"
                         type="text"
@@ -69,12 +69,25 @@ import { store } from '@/routes/register';
                 </div>
 
                 <div class="grid gap-2">
-                    <Label for="date_of_birth">Date of birth</Label>
+                    <Label for="personal_identification_number">Personal identification number <span class="text-red-500">*</span></Label>
+                    <Input
+                        id="personal_identification_number"
+                        type="text"
+                        required
+                        :tabindex="4"
+                        name="personal_identification_number"
+                        placeholder="Personal identification number"
+                    />
+                    <InputError :message="errors.personal_identification_number" />
+                </div>
+
+                <div class="grid gap-2">
+                    <Label for="date_of_birth">Date of birth <span class="text-red-500">*</span></Label>
                     <Input
                         id="date_of_birth"
                         type="date"
                         required
-                        :tabindex="4"
+                        :tabindex="5"
                         autocomplete="bday"
                         name="date_of_birth"
                     />
@@ -86,7 +99,7 @@ import { store } from '@/routes/register';
                     <Input
                         id="phone"
                         type="text"
-                        :tabindex="5"
+                        :tabindex="6"
                         autocomplete="tel"
                         name="phone"
                         placeholder="+359..."
@@ -95,12 +108,12 @@ import { store } from '@/routes/register';
                 </div>
 
                 <div class="grid gap-2">
-                    <Label for="password">Password</Label>
+                    <Label for="password">Password <span class="text-red-500">*</span></Label>
                     <Input
                         id="password"
                         type="password"
                         required
-                        :tabindex="6"
+                        :tabindex="7"
                         autocomplete="new-password"
                         name="password"
                         placeholder="Password"
@@ -109,12 +122,12 @@ import { store } from '@/routes/register';
                 </div>
 
                 <div class="grid gap-2">
-                    <Label for="password_confirmation">Confirm password</Label>
+                    <Label for="password_confirmation">Confirm password <span class="text-red-500">*</span></Label>
                     <Input
                         id="password_confirmation"
                         type="password"
                         required
-                        :tabindex="7"
+                        :tabindex="8"
                         autocomplete="new-password"
                         name="password_confirmation"
                         placeholder="Confirm password"
@@ -125,7 +138,7 @@ import { store } from '@/routes/register';
                 <Button
                     type="submit"
                     class="mt-2 w-full"
-                    tabindex="8"
+                    tabindex="9"
                     :disabled="processing"
                     data-test="register-user-button"
                 >
@@ -139,7 +152,7 @@ import { store } from '@/routes/register';
                 <TextLink
                     :href="login()"
                     class="underline underline-offset-4"
-                    :tabindex="9"
+                    :tabindex="10"
                     >Log in</TextLink
                 >
             </div>

@@ -57,6 +57,7 @@ final class DashboardController extends Controller
 
         $rows = DB::table('appointments')
             ->leftJoin('doctors', 'appointments.doctor_id', '=', 'doctors.doctor_id')
+            ->leftJoin('users as doctor_users', 'doctors.user_id', '=', 'doctor_users.id')
             ->leftJoin('reviews', 'reviews.appointment_id', '=', 'appointments.appointment_id')
             ->where('appointments.patient_id', (int) $patient->patient_id)
             ->where('appointments.status', '!=', AppointmentStatus::Cancelled->value)
@@ -67,7 +68,7 @@ final class DashboardController extends Controller
                 'appointments.start_time',
                 'appointments.status',
                 'appointments.has_left_review',
-                'doctors.name as doctor_name',
+                'doctor_users.name as doctor_name',
                 'reviews.attitude as review_attitude',
                 'reviews.professionalism as review_professionalism',
             ]);
@@ -157,6 +158,7 @@ final class DashboardController extends Controller
                 $join->on('appointments.patient_id', '=', 'patients.patient_id')
                     ->whereNull('patients.deleted_at');
             })
+            ->join('users as patient_users', 'patients.user_id', '=', 'patient_users.id')
             ->where('appointments.doctor_id', (int) $doctor->doctor_id)
             ->where('appointments.status', '!=', AppointmentStatus::Cancelled->value)
             ->whereBetween('appointments.start_time', [
@@ -168,7 +170,7 @@ final class DashboardController extends Controller
                 'appointments.appointment_id',
                 'appointments.start_time',
                 'appointments.status',
-                'patients.name as patient_name',
+                'patient_users.name as patient_name',
                 'patients.gender as patient_gender',
                 'patients.date_of_birth as patient_dob',
             ]);

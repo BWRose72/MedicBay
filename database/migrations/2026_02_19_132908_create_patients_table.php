@@ -18,9 +18,8 @@ return new class extends Migration
                 ->constrained('users')
                 ->cascadeOnDelete();
 
-            $table->string('name');
             $table->string('gender');
-            $table->string('medical_record_number')->unique();
+            $table->string('personal_identification_number')->unique();
             $table->date('date_of_birth');
             $table->string('phone')->nullable();
 

@@ -35,7 +35,7 @@ function doctorImageUrl(doctorId: number): string {
 }
 
 function fallbackDoctorImage(): string {
-    return `/storage/doctors/0.jpg`;
+    return `/images/default-doctor.png`;
 }
 
 function fmtXof10(v: number | null): string {

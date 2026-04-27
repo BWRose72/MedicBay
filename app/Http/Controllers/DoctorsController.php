@@ -74,7 +74,7 @@ final class DoctorsController extends Controller
         ReviewServices $reviewServices,
     ): Response {
         $doctor = $doctorServices->findOrFail($doctor_id);
-        $doctor->load('specialisation');
+        $doctor->load(['specialisation', 'user']);
 
         $request->validate([
             'date' => ['nullable', 'date_format:Y-m-d'],
@@ -90,6 +90,7 @@ final class DoctorsController extends Controller
         $ratings = DB::table('reviews')
             ->leftJoin('appointments', 'reviews.appointment_id', '=', 'appointments.appointment_id')
             ->leftJoin('patients', 'reviews.patient_id', '=', 'patients.patient_id')
+            ->leftJoin('users as patient_users', 'patients.user_id', '=', 'patient_users.id')
             ->where('reviews.doctor_id', (int) $doctor->doctor_id)
             ->orderByDesc('appointments.start_time')
             ->orderByDesc('reviews.review_id')
@@ -98,7 +99,7 @@ final class DoctorsController extends Controller
                 'reviews.attitude',
                 'reviews.professionalism',
                 'appointments.start_time as appointment_start_time',
-                'patients.name as patient_name',
+                'patient_users.name as patient_name',
             ])
             ->map(function ($row) use ($timezone) {
                 $appointmentDate = $row->appointment_start_time !== null
@@ -165,7 +166,7 @@ final class DoctorsController extends Controller
 
         $this->authorizeDoctorEditor($request, $doctor);
 
-        $doctor->load('specialisation');
+        $doctor->load(['specialisation', 'user']);
 
         return Inertia::render('Doctors/Edit', [
             'doctor' => [
@@ -218,17 +219,81 @@ final class DoctorsController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'phone' => ['required', 'string', 'max:255'],
             'bio' => ['nullable', 'string'],
+            'schedule' => ['array'],
+            'schedule.*.day_of_week' => ['required', 'integer', 'between:1,7'],
+            'schedule.*.start_time' => ['required', 'date_format:H:i'],
+            'schedule.*.end_time' => ['required', 'date_format:H:i'],
+            'time_offs' => ['array'],
+            'time_offs.*.start_time' => ['required', 'date_format:H:i'],
+            'time_offs.*.end_time' => ['required', 'date_format:H:i'],
+            'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
         ]);
 
+        $schedule = $validated['schedule'] ?? [];
+        foreach ($schedule as $entry) {
+            if ((string) $entry['end_time'] <= (string) $entry['start_time']) {
+                return back()->withErrors([
+                    'schedule' => 'Each schedule end time must be after its start time.',
+                ]);
+            }
+        }
+
+        $timeOffs = $validated['time_offs'] ?? [];
+        foreach ($timeOffs as $entry) {
+            if ((string) $entry['end_time'] <= (string) $entry['start_time']) {
+                return back()->withErrors([
+                    'time_offs' => 'Each time-off end time must be after its start time.',
+                ]);
+            }
+        }
+
+        $doctor->user?->forceFill([
+            'name' => (string) $validated['name'],
+        ])->save();
+
         $doctor->fill([
-            'name' => $validated['name'],
             'phone' => $validated['phone'],
             'bio' => $validated['bio'] ?? null,
         ]);
 
         $doctor->save();
 
-        return redirect()->route('doctors.show', ['doctor_id' => (int) $doctor->doctor_id]);
+        DB::transaction(function () use ($doctor, $schedule, $timeOffs) {
+            DoctorWorkingHour::query()
+                ->where('doctor_id', (int) $doctor->doctor_id)
+                ->delete();
+
+            foreach ($schedule as $entry) {
+                DoctorWorkingHour::query()->create([
+                    'doctor_id' => (int) $doctor->doctor_id,
+                    'day_of_week' => (int) $entry['day_of_week'],
+                    'start_time' => (string) $entry['start_time'],
+                    'end_time' => (string) $entry['end_time'],
+                    'effective_from' => '00:00',
+                    'effective_to' => null,
+                ]);
+            }
+
+            DoctorTimeOff::query()
+                ->where('doctor_id', (int) $doctor->doctor_id)
+                ->delete();
+
+            foreach ($timeOffs as $entry) {
+                DoctorTimeOff::query()->create([
+                    'doctor_id' => (int) $doctor->doctor_id,
+                    'start_time' => (string) $entry['start_time'],
+                    'end_time' => (string) $entry['end_time'],
+                ]);
+            }
+        });
+
+        if ($request->hasFile('photo')) {
+            /** @var UploadedFile $photo */
+            $photo = $validated['photo'];
+            $this->saveDoctorPhoto($doctor, $photo);
+        }
+
+        return back();
     }
 
     public function updateSchedule(Request $request, int $doctor_id, DoctorServices $doctorServices): RedirectResponse
@@ -325,14 +390,7 @@ final class DoctorsController extends Controller
 
         /** @var UploadedFile $photo */
         $photo = $validated['photo'];
-        $targetDirectory = public_path('storage/doctors');
-
-        if (! is_dir($targetDirectory)) {
-            mkdir($targetDirectory, 0755, true);
-        }
-
-        $targetPath = $targetDirectory.DIRECTORY_SEPARATOR.$doctor->doctor_id.'.jpg';
-        $this->saveUploadedDoctorPhotoAsJpeg($photo, $targetPath);
+        $this->saveDoctorPhoto($doctor, $photo);
 
         return back();
     }
@@ -365,11 +423,23 @@ final class DoctorsController extends Controller
     private function doctorPhotoUrl(int $doctorId): string
     {
         $path = public_path("storage/doctors/{$doctorId}.jpg");
-        $fileName = is_file($path) ? "{$doctorId}.jpg" : '0.jpg';
-        $resolvedPath = public_path("storage/doctors/{$fileName}");
-        $version = is_file($resolvedPath) ? filemtime($resolvedPath) : time();
+        if (! is_file($path)) {
+            return '/images/default-doctor.png';
+        }
 
-        return "/storage/doctors/{$fileName}?v={$version}";
+        return "/storage/doctors/{$doctorId}.jpg?v=".filemtime($path);
+    }
+
+    private function saveDoctorPhoto(Doctor $doctor, UploadedFile $photo): void
+    {
+        $targetDirectory = public_path('storage/doctors');
+
+        if (! is_dir($targetDirectory)) {
+            mkdir($targetDirectory, 0755, true);
+        }
+
+        $targetPath = $targetDirectory.DIRECTORY_SEPARATOR.$doctor->doctor_id.'.jpg';
+        $this->saveUploadedDoctorPhotoAsJpeg($photo, $targetPath);
     }
 
     private function saveUploadedDoctorPhotoAsJpeg(UploadedFile $photo, string $targetPath): void

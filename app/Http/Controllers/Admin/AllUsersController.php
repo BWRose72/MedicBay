@@ -39,8 +39,15 @@ final class AllUsersController extends Controller
                 $query->where('name', 'like', "%{$q}%");
             })
             ->orderBy('name')
-            ->get()
-            ->map(function (User $u) {
+            ->get();
+
+        $patientPhones = Patient::query()
+            ->withoutTrashed()
+            ->whereIn('user_id', $users->pluck('id'))
+            ->pluck('phone', 'user_id');
+
+        $users = $users
+            ->map(function (User $u) use ($patientPhones) {
                 $isDoctor = method_exists($u, 'hasRole') ? $u->hasRole('doctor') : false;
                 $isPatient = method_exists($u, 'hasRole') ? $u->hasRole('patient') : false;
 
@@ -58,6 +65,7 @@ final class AllUsersController extends Controller
                     'email' => (string) $u->email,
                     'type' => $isDoctor ? 'doctor' : ($isPatient ? 'patient' : 'unknown'),
                     'doctor_id' => $doctorId ? (int) $doctorId : null,
+                    'phone' => $patientPhones->get($u->getKey()),
                 ];
             })
             ->values();
@@ -97,17 +105,36 @@ final class AllUsersController extends Controller
         ]);
 
         DB::transaction(function () use ($user, $validated) {
-            // Remove any existing doctor profile (should not exist if patient, but safe)
-            Doctor::query()->where('user_id', (int) $user->getKey())->delete();
-
-            // Create doctor profile (required fields per migration)
-            Doctor::query()->create([
-                'user_id' => (int) $user->getKey(),
-                'specialisation_id' => (int) $validated['specialisation_id'],
+            $user->forceFill([
                 'name' => (string) $validated['name'],
-                'phone' => (string) $validated['phone'],
-                'bio' => $validated['bio'] ?? null,
-            ]);
+            ])->save();
+
+            $doctor = Doctor::withTrashed()
+                ->where('user_id', (int) $user->getKey())
+                ->first();
+
+            if ($doctor) {
+                $doctor->fill([
+                    'specialisation_id' => (int) $validated['specialisation_id'],
+                    'phone' => (string) $validated['phone'],
+                    'bio' => $validated['bio'] ?? null,
+                ]);
+                $doctor->restore();
+                $doctor->save();
+            } else {
+                Doctor::query()->create([
+                    'user_id' => (int) $user->getKey(),
+                    'specialisation_id' => (int) $validated['specialisation_id'],
+                    'phone' => (string) $validated['phone'],
+                    'bio' => $validated['bio'] ?? null,
+                ]);
+            }
+
+            Patient::query()
+                ->where('user_id', (int) $user->getKey())
+                ->get()
+                ->each
+                ->delete();
 
             $this->promoteToDoctorRole($user);
         });
@@ -126,8 +153,15 @@ final class AllUsersController extends Controller
         $this->abortIfAdminUser($user);
 
         DB::transaction(function () use ($user) {
-            // Soft-delete doctor profile if exists
-            Doctor::query()->where('user_id', (int) $user->getKey())->delete();
+            Doctor::query()
+                ->where('user_id', (int) $user->getKey())
+                ->get()
+                ->each
+                ->delete();
+
+            Patient::withTrashed()
+                ->where('user_id', (int) $user->getKey())
+                ->restore();
 
             // Role: patient only
             if (method_exists($user, 'syncRoles')) {
@@ -150,8 +184,17 @@ final class AllUsersController extends Controller
 
         DB::transaction(function () use ($user) {
             // Soft-delete related profiles so they don’t remain “active” records.
-            Doctor::query()->where('user_id', (int) $user->getKey())->delete();
-            Patient::query()->where('user_id', (int) $user->getKey())->delete();
+            Doctor::query()
+                ->where('user_id', (int) $user->getKey())
+                ->get()
+                ->each
+                ->delete();
+
+            Patient::query()
+                ->where('user_id', (int) $user->getKey())
+                ->get()
+                ->each
+                ->delete();
 
             // Soft-delete user (your User model uses SoftDeletes)
             $user->delete();

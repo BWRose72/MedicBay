@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import AppPageLayout from '@/layouts/AppPageLayout.vue';
 
 defineOptions({ layout: AppPageLayout });
@@ -33,23 +33,19 @@ const props = defineProps<{
     time_offs: TimeOffRow[];
 }>();
 
-const form = useForm({
+const form = useForm<{
+    name: string;
+    phone: string;
+    bio: string;
+    schedule: ScheduleRow[];
+    time_offs: TimeOffRow[];
+    photo: File | null;
+}>({
     name: props.doctor.name,
     phone: props.doctor.phone,
     bio: props.doctor.bio ?? '',
-});
-
-const scheduleForm = useForm({
     schedule: props.schedule.map((row) => ({ ...row })),
-});
-
-const timeOffForm = useForm({
     time_offs: props.time_offs.map((row) => ({ ...row })),
-});
-
-const photoForm = useForm<{
-    photo: File | null;
-}>({
     photo: null,
 });
 
@@ -64,13 +60,27 @@ const weekDays = [
 ];
 
 function submit() {
-    form.patch(`/doctors/${props.doctor.doctor_id}`, {
+    form.transform((data) => ({
+        ...data,
+        _method: 'patch',
+    })).post(`/doctors/${props.doctor.doctor_id}`, {
+        forceFormData: true,
         preserveScroll: true,
+        onSuccess: () => {
+            form.photo = null;
+
+            if (window.history.length > 1) {
+                window.history.back();
+                return;
+            }
+
+            router.visit(`/doctors/${props.doctor.doctor_id}`);
+        },
     });
 }
 
 function addScheduleRow() {
-    scheduleForm.schedule.push({
+    form.schedule.push({
         working_hours_id: null,
         day_of_week: 1,
         start_time: '09:00',
@@ -79,17 +89,11 @@ function addScheduleRow() {
 }
 
 function removeScheduleRow(index: number) {
-    scheduleForm.schedule.splice(index, 1);
-}
-
-function saveSchedule() {
-    scheduleForm.patch(`/doctors/${props.doctor.doctor_id}/schedule`, {
-        preserveScroll: true,
-    });
+    form.schedule.splice(index, 1);
 }
 
 function addTimeOffRow() {
-    timeOffForm.time_offs.push({
+    form.time_offs.push({
         time_off_id: null,
         start_time: '12:00',
         end_time: '13:00',
@@ -97,27 +101,13 @@ function addTimeOffRow() {
 }
 
 function removeTimeOffRow(index: number) {
-    timeOffForm.time_offs.splice(index, 1);
-}
-
-function saveTimeOffs() {
-    timeOffForm.patch(`/doctors/${props.doctor.doctor_id}/time-offs`, {
-        preserveScroll: true,
-    });
+    form.time_offs.splice(index, 1);
 }
 
 function onPhotoChange(event: Event) {
     const files = (event.target as HTMLInputElement).files;
 
-    photoForm.photo = files?.[0] ?? null;
-}
-
-function savePhoto() {
-    photoForm.post(`/doctors/${props.doctor.doctor_id}/photo`, {
-        forceFormData: true,
-        preserveScroll: true,
-        onSuccess: () => photoForm.reset(),
-    });
+    form.photo = files?.[0] ?? null;
 }
 </script>
 
@@ -130,7 +120,7 @@ function savePhoto() {
 
         <div class="content-foreground">
             <div class="container-main section-spacing">
-                <div class="flex items-center justify-between gap-4">
+                <div class="flex items-start justify-between gap-4">
                     <div>
                         <h1 class="text-3xl sm:text-4xl font-semibold tracking-tight text-foreground">
                             Edit profile
@@ -140,13 +130,32 @@ function savePhoto() {
                         </p>
                     </div>
 
-                    <Link :href="`/doctors/${props.doctor.doctor_id}`" class="nav-link">
-                        Back
-                    </Link>
+                    <div class="flex shrink-0 items-center gap-3">
+                        <button
+                            type="submit"
+                            form="doctor-editor-form"
+                            class="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90 disabled:opacity-60"
+                            :disabled="form.processing"
+                            aria-label="Save changes"
+                            title="Save changes"
+                        >
+                            Save
+                        </button>
+
+                        <Link :href="`/doctors/${props.doctor.doctor_id}`" class="nav-link">
+                            Back
+                        </Link>
+                    </div>
                 </div>
 
-                <form class="mt-10 max-w-2xl space-y-6" @submit.prevent="submit">
-                    <div class="rounded-2xl bg-card/70 backdrop-blur-sm border border-border p-6 space-y-5">
+                <form id="doctor-editor-form" class="mt-10 space-y-8" @submit.prevent="submit">
+                    <section class="rounded-lg bg-card/70 backdrop-blur-sm border border-border p-6 space-y-5">
+                        <div>
+                            <h2 class="text-xl font-semibold tracking-tight text-foreground">
+                                Profile details
+                            </h2>
+                        </div>
+
                         <div>
                             <label class="block text-sm font-semibold text-foreground">Name</label>
                             <input
@@ -182,27 +191,11 @@ function savePhoto() {
                                 {{ form.errors.bio }}
                             </div>
                         </div>
+                    </section>
 
-                        <div class="flex items-center gap-3">
-                            <button
-                                type="submit"
-                                class="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90 disabled:opacity-60"
-                                :disabled="form.processing"
-                            >
-                                Save
-                            </button>
-
-                            <div v-if="form.recentlySuccessful" class="text-sm text-muted-foreground">
-                                Saved.
-                            </div>
-                        </div>
-                    </div>
-                </form>
-
-                <form class="mt-10 max-w-2xl space-y-6" @submit.prevent="savePhoto">
-                    <div class="rounded-2xl bg-card/70 backdrop-blur-sm border border-border p-6 space-y-5">
+                    <section class="rounded-lg bg-card/70 backdrop-blur-sm border border-border p-6 space-y-5">
                         <div>
-                            <h2 class="text-2xl font-semibold tracking-tight text-foreground">
+                            <h2 class="text-xl font-semibold tracking-tight text-foreground">
                                 Profile picture
                             </h2>
                             <p class="mt-2 text-sm text-muted-foreground">
@@ -225,33 +218,17 @@ function savePhoto() {
                                     class="mt-2 block w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground"
                                     @change="onPhotoChange"
                                 />
-                                <div v-if="photoForm.errors.photo" class="mt-2 text-sm text-destructive">
-                                    {{ photoForm.errors.photo }}
+                                <div v-if="form.errors.photo" class="mt-2 text-sm text-destructive">
+                                    {{ form.errors.photo }}
                                 </div>
                             </div>
                         </div>
+                    </section>
 
-                        <div class="flex items-center gap-3">
-                            <button
-                                type="submit"
-                                class="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90 disabled:opacity-60"
-                                :disabled="photoForm.processing || !photoForm.photo"
-                            >
-                                Upload picture
-                            </button>
-
-                            <div v-if="photoForm.recentlySuccessful" class="text-sm text-muted-foreground">
-                                Picture uploaded.
-                            </div>
-                        </div>
-                    </div>
-                </form>
-
-                <form class="mt-10 space-y-6" @submit.prevent="saveSchedule">
-                    <div class="rounded-2xl bg-card/70 backdrop-blur-sm border border-border p-6">
+                    <section class="rounded-lg bg-card/70 backdrop-blur-sm border border-border p-6">
                         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                             <div>
-                                <h2 class="text-2xl font-semibold tracking-tight text-foreground">
+                                <h2 class="text-xl font-semibold tracking-tight text-foreground">
                                     Weekly schedule
                                 </h2>
                                 <p class="mt-2 text-sm text-muted-foreground">
@@ -268,15 +245,15 @@ function savePhoto() {
                             </button>
                         </div>
 
-                        <div v-if="scheduleForm.errors.schedule" class="mt-4 text-sm text-destructive">
-                            {{ scheduleForm.errors.schedule }}
+                        <div v-if="form.errors.schedule" class="mt-4 text-sm text-destructive">
+                            {{ form.errors.schedule }}
                         </div>
 
                         <div class="mt-6 space-y-4">
                             <div
-                                v-for="(row, index) in scheduleForm.schedule"
+                                v-for="(row, index) in form.schedule"
                                 :key="row.working_hours_id ?? `new-schedule-${index}`"
-                                class="rounded-2xl bg-background/60 border border-border p-4"
+                                class="rounded-lg bg-background/60 border border-border p-4"
                             >
                                 <div class="grid gap-4 md:grid-cols-[1.2fr_1fr_1fr_auto] md:items-end">
                                     <div>
@@ -322,34 +299,18 @@ function savePhoto() {
                             </div>
 
                             <div
-                                v-if="scheduleForm.schedule.length === 0"
-                                class="rounded-2xl bg-background/40 border border-border p-6 text-center text-sm text-muted-foreground"
+                                v-if="form.schedule.length === 0"
+                                class="rounded-lg bg-background/40 border border-border p-6 text-center text-sm text-muted-foreground"
                             >
                                 No working intervals yet.
                             </div>
                         </div>
+                    </section>
 
-                        <div class="mt-6 flex items-center gap-3">
-                            <button
-                                type="submit"
-                                class="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90 disabled:opacity-60"
-                                :disabled="scheduleForm.processing"
-                            >
-                                Save schedule
-                            </button>
-
-                            <div v-if="scheduleForm.recentlySuccessful" class="text-sm text-muted-foreground">
-                                Schedule saved.
-                            </div>
-                        </div>
-                    </div>
-                </form>
-
-                <form class="mt-10 space-y-6" @submit.prevent="saveTimeOffs">
-                    <div class="rounded-2xl bg-card/70 backdrop-blur-sm border border-border p-6">
+                    <section class="rounded-lg bg-card/70 backdrop-blur-sm border border-border p-6">
                         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                             <div>
-                                <h2 class="text-2xl font-semibold tracking-tight text-foreground">
+                                <h2 class="text-xl font-semibold tracking-tight text-foreground">
                                     Time-off intervals
                                 </h2>
                                 <p class="mt-2 text-sm text-muted-foreground">
@@ -366,15 +327,15 @@ function savePhoto() {
                             </button>
                         </div>
 
-                        <div v-if="timeOffForm.errors.time_offs" class="mt-4 text-sm text-destructive">
-                            {{ timeOffForm.errors.time_offs }}
+                        <div v-if="form.errors.time_offs" class="mt-4 text-sm text-destructive">
+                            {{ form.errors.time_offs }}
                         </div>
 
                         <div class="mt-6 space-y-4">
                             <div
-                                v-for="(row, index) in timeOffForm.time_offs"
+                                v-for="(row, index) in form.time_offs"
                                 :key="row.time_off_id ?? `new-time-off-${index}`"
-                                class="rounded-2xl bg-background/60 border border-border p-4"
+                                class="rounded-lg bg-background/60 border border-border p-4"
                             >
                                 <div class="grid gap-4 md:grid-cols-[1fr_1fr_auto] md:items-end">
                                     <div>
@@ -408,27 +369,13 @@ function savePhoto() {
                             </div>
 
                             <div
-                                v-if="timeOffForm.time_offs.length === 0"
-                                class="rounded-2xl bg-background/40 border border-border p-6 text-center text-sm text-muted-foreground"
+                                v-if="form.time_offs.length === 0"
+                                class="rounded-lg bg-background/40 border border-border p-6 text-center text-sm text-muted-foreground"
                             >
                                 No time-off intervals yet.
                             </div>
                         </div>
-
-                        <div class="mt-6 flex items-center gap-3">
-                            <button
-                                type="submit"
-                                class="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90 disabled:opacity-60"
-                                :disabled="timeOffForm.processing"
-                            >
-                                Save time off
-                            </button>
-
-                            <div v-if="timeOffForm.recentlySuccessful" class="text-sm text-muted-foreground">
-                                Time off saved.
-                            </div>
-                        </div>
-                    </div>
+                    </section>
                 </form>
             </div>
         </div>

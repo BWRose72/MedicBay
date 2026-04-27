@@ -42,7 +42,7 @@ final class DoctorScheduleService
         $appointmentsByStart = Appointment::query()
             ->with(['patient' => function ($q) {
                 $q->withoutTrashed();
-            }])
+            }, 'patient.user'])
             ->where('doctor_id', (int) $doctor->doctor_id)
             ->whereBetween('start_time', [$dayStart, $dayEnd])
             ->where('status', AppointmentStatus::Scheduled)
@@ -75,7 +75,7 @@ final class DoctorScheduleService
                     'patient_gender' => $appointment?->patient?->gender,
                     'patient_dob' => $appointment?->patient?->date_of_birth?->format('Y-m-d'),
                     'patient_phone' => $appointment?->patient?->phone,
-                    'patient_mrn' => $appointment?->patient?->medical_record_number,
+                    'patient_personal_identification_number' => $appointment?->patient?->personal_identification_number,
                 ]);
             }
         }

@@ -38,7 +38,7 @@ type AppointmentSlot = {
     patient_gender: string | null;
     patient_dob: string | null;
     patient_phone: string | null;
-    patient_mrn: string | null;
+    patient_personal_identification_number: string | null;
 };
 
 type DoctorRatingItem = {
@@ -149,7 +149,7 @@ function doctorImageUrl(doctorId: number): string {
     return `/storage/doctors/${doctorId}.jpg`;
 }
 function fallbackDoctorImage(): string {
-    return `/storage/doctors/0.jpg`;
+    return `/images/default-doctor.png`;
 }
 
 function togglePatientSummary(slot: AppointmentSlot): void {
@@ -351,8 +351,8 @@ function patientAge(slot: AppointmentSlot): string {
                                                     {{ slot.patient_phone ?? '-' }}
                                                 </div>
                                                 <div class="sm:col-span-2">
-                                                    <span class="font-semibold text-foreground">Medical record №:</span>
-                                                    {{ slot.patient_mrn ?? '-' }}
+                                                    <span class="font-semibold text-foreground">Personal identification number:</span>
+                                                    {{ slot.patient_personal_identification_number ?? '-' }}
                                                 </div>
                                             </div>
                                         </div>

@@ -9,7 +9,6 @@ use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
 use Laravel\Fortify\Contracts\CreatesNewUsers;
 
 class CreateNewUser implements CreatesNewUsers
@@ -29,6 +28,7 @@ class CreateNewUser implements CreatesNewUsers
 
             // REQUIRED by your patients migration
             'gender' => ['required', 'string', 'max:50'],
+            'personal_identification_number' => ['required', 'string', 'max:50', 'unique:patients,personal_identification_number'],
             'date_of_birth' => ['required', 'date'],
 
             // OPTIONAL in your patients migration
@@ -47,27 +47,15 @@ class CreateNewUser implements CreatesNewUsers
                 $user->assignRole('patient');
             }
 
-            $mrn = $this->generateUniqueMrn();
-
             Patient::create([
                 'user_id' => (int) $user->id,
-                'name' => (string) $input['name'],
                 'gender' => (string) $input['gender'],
-                'medical_record_number' => $mrn,
+                'personal_identification_number' => (string) $input['personal_identification_number'],
                 'date_of_birth' => (string) $input['date_of_birth'],
                 'phone' => $input['phone'] ?? null,
             ]);
 
             return $user;
         });
-    }
-
-    private function generateUniqueMrn(): string
-    {
-        do {
-            $mrn = 'MRN-' . Str::upper(Str::random(10));
-        } while (Patient::query()->where('medical_record_number', $mrn)->exists());
-
-        return $mrn;
     }
 }

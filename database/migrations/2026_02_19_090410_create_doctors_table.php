@@ -19,7 +19,6 @@ return new class extends Migration
                 ->constrained('specialisations', 'specialisation_id')
                 ->restrictOnDelete();
 
-            $table->string('name');
             $table->string('phone');
             $table->text('bio')->nullable();
 

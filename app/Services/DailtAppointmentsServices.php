@@ -30,7 +30,7 @@ final class DailyAppointmentsServices
         return Appointment::query()
             ->with(['patient' => function ($q) {
                 $q->withoutTrashed();
-            }])
+            }, 'patient.user'])
             ->forDoctor($doctorId)
             ->upcoming()
             ->where('status', AppointmentStatus::Scheduled)
@@ -68,7 +68,7 @@ final class DailyAppointmentsServices
         return Appointment::query()
             ->with(['patient' => function ($q) {
                 $q->withoutTrashed();
-            }])
+            }, 'patient.user'])
             ->forDoctor($doctorId)
             ->where('status', AppointmentStatus::Scheduled)
             ->whereBetween('start_time', [$start, $end])

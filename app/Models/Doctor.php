@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -22,11 +23,24 @@ class Doctor extends Model
 
     protected $fillable = [
         'user_id',
-        'name',
         'specialisation_id',
         'phone',
         'bio',
     ];
+
+    protected static function booted(): void
+    {
+        static::deleting(function (Doctor $doctor) {
+            if ($doctor->isForceDeleting()) {
+                return;
+            }
+
+            Appointment::query()
+                ->where('doctor_id', (int) $doctor->getKey())
+                ->where('start_time', '>', CarbonImmutable::now((string) config('app.timezone', 'Europe/Sofia'))->subMinutes(30))
+                ->delete();
+        });
+    }
 
     // Relationships
     public function user(): BelongsTo
@@ -47,6 +61,11 @@ class Doctor extends Model
     // Accessor
     public function getDisplayNameAttribute(): string
     {
-        return 'Dr. '.$this->name;
+        return 'Dr. '.($this->name ?? 'Doctor');
+    }
+
+    public function getNameAttribute(): ?string
+    {
+        return $this->user?->name;
     }
 }

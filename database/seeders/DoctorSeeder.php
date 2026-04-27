@@ -95,7 +95,6 @@ class DoctorSeeder extends Seeder
                 $doctor = Doctor::withTrashed()->updateOrCreate(
                     ['user_id' => (int) $user->getKey()],
                     [
-                        'name' => $doctorData['name'],
                         'specialisation_id' => (int) $specialisationId,
                         'phone' => $doctorData['phone'],
                         'bio' => $doctorData['bio'],

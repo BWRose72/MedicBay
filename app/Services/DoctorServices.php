@@ -15,6 +15,7 @@ final class DoctorServices
     {
         return Doctor::query()
             ->withoutTrashed()
+            ->with('user')
             ->get();
     }
 
@@ -22,6 +23,7 @@ final class DoctorServices
     {
         return Doctor::query()
             ->withoutTrashed()
+            ->with('user')
             ->where('specialisation_id', $specialisationId)
             ->get();
     }
@@ -30,6 +32,7 @@ final class DoctorServices
     {
         return Doctor::query()
             ->withoutTrashed()
+            ->with('user')
             ->whereKey($id)
             ->firstOrFail();
     }
