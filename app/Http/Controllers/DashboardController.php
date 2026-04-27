@@ -23,7 +23,7 @@ final class DashboardController extends Controller
 
         // Priority: admin > doctor > patient
         if ($user->hasRole('admin')) {
-            return Inertia::render('Dashboard', ['dashboard_type' => 'admin']);
+            return $this->adminDashboard();
         }
 
         if ($user->hasRole('doctor')) {
@@ -35,6 +35,27 @@ final class DashboardController extends Controller
         }
 
         return Inertia::render('Dashboard', ['dashboard_type' => 'default']);
+    }
+
+    private function adminDashboard(): Response
+    {
+        $tz = config('app.timezone', 'Europe/Sofia');
+        $now = CarbonImmutable::now($tz);
+
+        return Inertia::render('Dashboard', [
+            'dashboard_type' => 'admin',
+            'dashboard_stats' => [
+                'users' => DB::table('users')->whereNull('deleted_at')->count(),
+                'doctors' => DB::table('doctors')->whereNull('deleted_at')->count(),
+                'patients' => DB::table('patients')->whereNull('deleted_at')->count(),
+                'appointments_today' => DB::table('appointments')
+                    ->whereBetween('start_time', [
+                        $now->startOfDay()->toDateTimeString(),
+                        $now->endOfDay()->toDateTimeString(),
+                    ])
+                    ->count(),
+            ],
+        ]);
     }
 
     private function patientDashboard(int $userId): Response

@@ -2,9 +2,6 @@
 <script setup lang="ts">
 import { router, usePage } from '@inertiajs/vue3'
 import { computed, ref } from 'vue'
-import AppPageLayout from '@/layouts/AppPageLayout.vue'
-
-defineOptions({ layout: AppPageLayout })
 
 type DoctorAppointmentBox = {
     appointment_id: number
@@ -107,27 +104,12 @@ function setAppointmentStatus(id: number, status: string) {
 </script>
 
 <template>
-    <div class="content-wrap">
-        <div class="content-bg"></div>
-        <div class="content-overlay"></div>
-
-        <div class="content-foreground">
-            <div class="container-main section-spacing">
-                <div>
-                    <h1 class="text-3xl sm:text-4xl font-semibold tracking-tight text-foreground">
-                        Dashboard
-                    </h1>
-                    <p class="mt-2 text-base text-muted-foreground">
-                        Today's appointments
-                    </p>
-                </div>
-
-                <div class="mt-10 space-y-10">
+    <div class="space-y-6">
                     <div>
                         <div class="mb-3 text-lg font-semibold text-foreground">Current</div>
 
                         <div v-if="appointments.current"
-                            class="flex items-stretch overflow-hidden rounded-2xl bg-primary/50 border border-border">
+                            class="flex items-stretch overflow-hidden rounded-lg bg-card/85 border border-border shadow-sm backdrop-blur-sm">
                             <div class="flex w-28 items-center justify-center border-r border-border px-3 py-5">
                                 <div class="text-xl font-semibold text-foreground">
                                     {{ appointments.current.time }}
@@ -148,12 +130,12 @@ function setAppointmentStatus(id: number, status: string) {
                         </div>
 
                         <div v-else
-                            class="rounded-2xl bg-card/70 backdrop-blur-sm border border-border p-6 text-muted-foreground">
+                            class="rounded-lg bg-card/70 backdrop-blur-sm border border-border p-6 text-muted-foreground">
                             No current appointment.
                         </div>
                     </div>
 
-                    <details class="rounded-2xl bg-card/70 backdrop-blur-sm border border-border">
+                    <details class="rounded-lg bg-card/70 backdrop-blur-sm border border-border">
                         <summary class="cursor-pointer select-none px-6 py-4 text-lg font-semibold text-foreground">
                             Past appointments
                             <span class="ml-2 text-sm text-muted-foreground">
@@ -167,7 +149,7 @@ function setAppointmentStatus(id: number, status: string) {
                             </div>
 
                             <div v-for="a in appointments.past" :key="a.appointment_id"
-                                class="rounded-2xl bg-background/70 p-5 border border-border flex items-center justify-between gap-4">
+                                class="rounded-lg bg-background/70 p-5 border border-border flex items-center justify-between gap-4">
                                 <div class="min-w-0">
                                     <div class="text-base font-semibold text-foreground">
                                         {{ a.start_time }} - {{ a.patient_name }}
@@ -199,7 +181,7 @@ function setAppointmentStatus(id: number, status: string) {
                         </div>
                     </details>
 
-                    <div class="rounded-2xl bg-card/70 backdrop-blur-sm border border-border p-6">
+                    <div class="rounded-lg bg-card/70 backdrop-blur-sm border border-border p-6">
                         <div class="text-lg font-semibold text-foreground">
                             Future appointments
                             <span class="ml-2 text-sm text-muted-foreground">
@@ -213,7 +195,7 @@ function setAppointmentStatus(id: number, status: string) {
                             </div>
 
                             <div v-for="a in visibleFutureAppointments" :key="a.appointment_id"
-                                class="rounded-2xl bg-background/70 p-5 flex items-center justify-between gap-4 border border-border">
+                                class="rounded-lg bg-background/70 p-5 flex items-center justify-between gap-4 border border-border">
                                 <div>
                                     <div class="text-base font-semibold text-foreground">
                                         {{ a.start_time }} - {{ a.patient_name }}
@@ -235,8 +217,5 @@ function setAppointmentStatus(id: number, status: string) {
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
     </div>
 </template>

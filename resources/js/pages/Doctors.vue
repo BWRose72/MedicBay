@@ -95,12 +95,12 @@ function onSpecialisationChange(e: Event) {
                     <div class="doctors-scroll space-y-4 pr-2">
                         <template v-if="props.doctors?.length">
                             <Link v-for="d in props.doctors" :key="d.doctor_id" :href="`/doctors/${d.doctor_id}`"
-                                class="block rounded-2xl bg-primary/75 text-foreground backdrop-blur-sm p-5 sm:p-6 hover:bg-primary/80 transition">
+                                class="block rounded-lg bg-card/85 text-foreground backdrop-blur-sm p-5 sm:p-6 hover:bg-muted transition border border-border">
                                 <div class="grid gap-4 sm:gap-6 sm:grid-cols-[1fr_220px] items-center">
 
                                     <div class="flex items-center gap-4 sm:gap-6">
                                         <img :src="doctorImageUrl(d.doctor_id)" :alt="`Doctor ${d.name}`"
-                                            class="h-24 w-24 sm:h-28 sm:w-28 rounded-2xl object-cover shrink-0"
+                                            class="h-24 w-24 sm:h-28 sm:w-28 rounded-lg object-cover shrink-0"
                                             loading="lazy"
                                             @error="(ev) => ((ev.target as HTMLImageElement).src = fallbackDoctorImage())" />
 
@@ -139,12 +139,12 @@ function onSpecialisationChange(e: Event) {
                         </template>
 
                         <template v-else>
-                            <div class="flex items-center justify-center rounded-2xl bg-primary/40 p-5 sm:p-6 text-center text-foreground"
+                            <div class="flex items-center justify-center rounded-lg bg-card/80 p-5 sm:p-6 text-center text-foreground border border-border"
                                 style="height: 140px">
                                 No doctors found for this filter.
                             </div>
 
-                            <div v-for="n in 3" :key="n" class="rounded-2xl bg-primary/0 p-5 sm:p-6 opacity-60"
+                            <div v-for="n in 3" :key="n" class="rounded-lg bg-primary/0 p-5 sm:p-6 opacity-60"
                                 style="height: 140px"></div>
                         </template>
                     </div>

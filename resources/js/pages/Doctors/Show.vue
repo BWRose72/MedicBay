@@ -236,11 +236,11 @@ function patientAge(slot: AppointmentSlot): string {
 
                         <!-- Larger photo -->
                         <img :src="doctorImageUrl(props.doctor.doctor_id)" :alt="`Doctor ${props.doctor.name}`"
-                            class="mx-auto h-60 w-60 sm:h-72 sm:w-72 rounded-2xl object-cover" loading="lazy"
+                            class="mx-auto h-60 w-60 sm:h-72 sm:w-72 rounded-lg object-cover" loading="lazy"
                             @error="(ev) => ((ev.target as HTMLImageElement).src = fallbackDoctorImage())" />
 
                         <!-- Larger white information box -->
-                        <div class="rounded-2xl bg-card p-8">
+                        <div class="rounded-lg bg-card p-8 border border-border">
                             <div class="mt-6 space-y-6 text-base">
                                 <div>
                                     <div class="font-semibold text-foreground text-lg">Average ratings</div>
@@ -274,7 +274,7 @@ function patientAge(slot: AppointmentSlot): string {
                     </div>
 
                     <!-- RIGHT COLUMN -->
-                    <div class="rounded-2xl bg-primary/25 backdrop-blur-sm p-8 min-h-[520px] flex flex-col">
+                    <div class="rounded-lg bg-card/80 backdrop-blur-sm p-8 min-h-[520px] flex flex-col border border-border">
                         <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                             <div>
                                 <div class="text-2xl font-semibold text-foreground">
@@ -362,7 +362,7 @@ function patientAge(slot: AppointmentSlot): string {
 
                             <div
                                 v-else
-                                class="flex min-h-[260px] items-center justify-center rounded-xl bg-background/40 p-6 text-center text-base text-muted-foreground"
+                                class="flex min-h-[260px] items-center justify-center rounded-lg bg-background/40 p-6 text-center text-base text-muted-foreground"
                             >
                                 No appointment slots are available for this date.
                             </div>
@@ -371,7 +371,7 @@ function patientAge(slot: AppointmentSlot): string {
 
                 </div>
 
-                <details v-if="isAdmin" class="mt-10 rounded-2xl bg-card/70 backdrop-blur-sm border border-border">
+                <details v-if="isAdmin" class="mt-10 rounded-lg bg-card/70 backdrop-blur-sm border border-border">
                     <summary class="cursor-pointer select-none px-6 py-4 text-lg font-semibold text-foreground">
                         All ratings
                         <span class="ml-2 text-sm text-muted-foreground">
@@ -388,7 +388,7 @@ function patientAge(slot: AppointmentSlot): string {
                             <div
                                 v-for="rating in props.ratings"
                                 :key="rating.review_id"
-                                class="rounded-2xl border border-border bg-background/70 p-5"
+                                class="rounded-lg border border-border bg-background/70 p-5"
                             >
                                 <div class="text-sm text-muted-foreground">
                                     {{ rating.appointment_date ?? 'Unknown date' }}

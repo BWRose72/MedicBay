@@ -207,7 +207,7 @@ function onPhotoChange(event: Event) {
                             <img
                                 :src="props.doctor.photo_url"
                                 :alt="`Doctor ${props.doctor.name}`"
-                                class="h-32 w-32 rounded-2xl object-cover"
+                                class="h-32 w-32 rounded-lg object-cover"
                             />
 
                             <div class="flex-1">

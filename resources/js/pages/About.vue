@@ -28,7 +28,7 @@ defineOptions({
                 </div>
 
                 <section class="mt-10 grid items-center gap-10 lg:grid-cols-2">
-                    <div class="rounded-2xl bg-primary/65 p-6 sm:p-8">
+                    <div class="rounded-lg bg-background/85 p-6 shadow-sm ring-1 ring-border sm:p-8">
                         <h2 class="text-2xl font-semibold tracking-tight text-foreground">
                             Care that stays organized
                         </h2>
@@ -45,7 +45,7 @@ defineOptions({
                         </p>
                     </div>
 
-                    <div class="overflow-hidden rounded-2xl">
+                    <div class="overflow-hidden rounded-lg">
                         <img
                             src="/images/doctor.jpg"
                             alt="Medical professional"
@@ -55,7 +55,7 @@ defineOptions({
                 </section>
 
                 <section class="mt-10 grid gap-4 md:grid-cols-3">
-                    <div class="rounded-2xl bg-card/80 p-6 backdrop-blur-sm border border-border">
+                    <div class="rounded-lg bg-card/80 p-6 backdrop-blur-sm border border-border">
                         <div class="text-xl font-semibold text-foreground">
                             For patients
                         </div>
@@ -64,7 +64,7 @@ defineOptions({
                         </p>
                     </div>
 
-                    <div class="rounded-2xl bg-card/80 p-6 backdrop-blur-sm border border-border">
+                    <div class="rounded-lg bg-card/80 p-6 backdrop-blur-sm border border-border">
                         <div class="text-xl font-semibold text-foreground">
                             For doctors
                         </div>
@@ -73,7 +73,7 @@ defineOptions({
                         </p>
                     </div>
 
-                    <div class="rounded-2xl bg-card/80 p-6 backdrop-blur-sm border border-border">
+                    <div class="rounded-lg bg-card/80 p-6 backdrop-blur-sm border border-border">
                         <div class="text-xl font-semibold text-foreground">
                             For admins
                         </div>
@@ -84,7 +84,7 @@ defineOptions({
                 </section>
 
                 <section class="mt-10 grid items-center gap-10 lg:grid-cols-2">
-                    <div class="overflow-hidden rounded-2xl">
+                    <div class="overflow-hidden rounded-lg">
                         <img
                             src="/images/equipment.jpg"
                             alt="Medical equipment"

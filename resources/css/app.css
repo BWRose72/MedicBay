@@ -181,7 +181,9 @@
 
     .content-bg {
         @apply absolute inset-0 pointer-events-none;
-        background-image: url('/images/background.jpg');
+        background:
+            linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(244, 252, 235, 0.9) 100%),
+            url('/images/background.jpg');
         background-repeat: no-repeat;
         background-position: bottom center;
         background-size: cover;
@@ -195,7 +197,7 @@
 
     .content-overlay {
         @apply absolute inset-0 pointer-events-none;
-        background: rgba(255, 255, 255, 0.65);
+        background: rgba(255, 255, 255, 0.2);
         z-index: 5;
     }
 
@@ -241,7 +243,7 @@
     }
 
     .feature-image {
-        @apply rounded-2xl w-full object-cover h-[360px];
+        @apply rounded-lg w-full object-cover h-[360px];
     }
 
     .footer-title {

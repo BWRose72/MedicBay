@@ -1,32 +1,23 @@
-<!-- resources/js/pages/AdminDashboard.vue -->
-<script setup lang="ts">
-import { Head } from '@inertiajs/vue3';
-import AppPageLayout from '@/layouts/AppPageLayout.vue';
-
-defineOptions({ layout: AppPageLayout });
-</script>
-
 <template>
+    <section class="rounded-lg border border-border bg-card/70 p-6 backdrop-blur-sm">
+        <h2 class="text-lg font-semibold text-foreground">Administrative workspace</h2>
+        <p class="mt-2 text-sm text-muted-foreground">
+            Review user access, doctor profiles, and daily operational activity from the admin tools.
+        </p>
 
-    <Head title="Admin Dashboard" />
-
-    <div class="content-wrap">
-        <div class="content-bg"></div>
-        <div class="content-overlay"></div>
-
-        <div class="content-foreground">
-            <div class="container-main section-spacing">
-                <h1 class="text-3xl sm:text-4xl font-semibold tracking-tight text-foreground">
-                    Admin Dashboard
-                </h1>
-                <p class="mt-2 text-base text-muted-foreground">
-                    Admin-only overview.
-                </p>
-
-                <div class="mt-10 rounded-2xl bg-card/70 backdrop-blur-sm border border-border p-6">
-                    <p>Content to be added.</p>
-                </div>
-            </div>
+        <div class="mt-6 grid gap-3 sm:grid-cols-2">
+            <a
+                href="/admin/users"
+                class="rounded-md border border-border bg-background/70 p-4 text-sm font-semibold text-foreground hover:bg-muted"
+            >
+                Manage users
+            </a>
+            <a
+                href="/doctors"
+                class="rounded-md border border-border bg-background/70 p-4 text-sm font-semibold text-foreground hover:bg-muted"
+            >
+                Review doctors
+            </a>
         </div>
-    </div>
+    </section>
 </template>

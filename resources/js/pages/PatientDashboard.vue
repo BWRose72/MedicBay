@@ -156,27 +156,12 @@ function submitReview(appointmentId: number): void {
 </script>
 
 <template>
-    <div class="content-wrap">
-        <div class="content-bg"></div>
-        <div class="content-overlay"></div>
-
-        <div class="content-foreground">
-            <div class="container-main section-spacing">
-                <div>
-                    <h1 class="text-3xl sm:text-4xl font-semibold tracking-tight text-foreground">
-                        Dashboard
-                    </h1>
-                    <p class="mt-2 text-base text-muted-foreground">
-                        Your appointments
-                    </p>
-                </div>
-
-                <div class="mt-10 space-y-8">
+    <div class="space-y-6">
                     <div>
                         <div class="mb-3 text-lg font-semibold text-foreground">Current</div>
 
                         <div v-if="appointments.current"
-                            class="rounded-2xl bg-primary/50 p-5 flex items-center justify-between gap-4 border border-border">
+                            class="rounded-lg bg-card/85 p-5 flex items-center justify-between gap-4 border border-border shadow-sm backdrop-blur-sm">
                             <div>
                                 <div class="text-base font-semibold text-foreground">
                                     {{ appointments.current.start_time }} - {{ appointments.current.doctor_name }}
@@ -188,12 +173,12 @@ function submitReview(appointmentId: number): void {
                         </div>
 
                         <div v-else
-                            class="rounded-2xl bg-card/70 backdrop-blur-sm border border-border p-6 text-muted-foreground">
+                            class="rounded-lg bg-card/70 backdrop-blur-sm border border-border p-6 text-muted-foreground">
                             No current appointment.
                         </div>
                     </div>
 
-                    <details class="rounded-2xl bg-card/70 backdrop-blur-sm border border-border">
+                    <details class="rounded-lg bg-card/70 backdrop-blur-sm border border-border">
                         <summary class="cursor-pointer select-none px-6 py-4 text-lg font-semibold text-foreground">
                             Past appointments
                             <span class="ml-2 text-sm text-muted-foreground">
@@ -207,7 +192,7 @@ function submitReview(appointmentId: number): void {
                             </div>
 
                             <div v-for="a in appointments.past" :key="a.appointment_id"
-                                class="rounded-2xl bg-background/70 p-5 border border-border">
+                                class="rounded-lg bg-background/70 p-5 border border-border">
                                 <div class="flex items-center justify-between gap-4">
                                     <div>
                                         <div class="text-base font-semibold text-foreground">
@@ -232,7 +217,7 @@ function submitReview(appointmentId: number): void {
                                 </div>
 
                                 <form v-if="isReviewFormOpen(a.appointment_id)"
-                                    class="mt-4 rounded-xl border border-border bg-card/60 p-4 space-y-4"
+                                    class="mt-4 rounded-lg border border-border bg-card/60 p-4 space-y-4"
                                     @submit.prevent="submitReview(a.appointment_id)">
                                     <div>
                                         <div class="text-sm font-medium text-foreground">Professionalism (0-10)</div>
@@ -294,7 +279,7 @@ function submitReview(appointmentId: number): void {
                         </div>
                     </details>
 
-                    <div class="rounded-2xl bg-card/70 backdrop-blur-sm border border-border p-6">
+                    <div class="rounded-lg bg-card/70 backdrop-blur-sm border border-border p-6">
                         <div class="text-lg font-semibold text-foreground">
                             Future appointments
                             <span class="ml-2 text-sm text-muted-foreground">
@@ -308,7 +293,7 @@ function submitReview(appointmentId: number): void {
                             </div>
 
                             <div v-for="a in visibleFutureAppointments" :key="a.appointment_id"
-                                class="rounded-2xl bg-background/70 p-5 flex items-center justify-between gap-4 border border-border">
+                                class="rounded-lg bg-background/70 p-5 flex items-center justify-between gap-4 border border-border">
                                 <div>
                                     <div class="text-base font-semibold text-foreground">
                                         {{ a.start_time }} - {{ a.doctor_name }}
@@ -330,9 +315,5 @@ function submitReview(appointmentId: number): void {
                             </div>
                         </div>
                     </div>
-                </div>
-
-            </div>
-        </div>
     </div>
 </template>

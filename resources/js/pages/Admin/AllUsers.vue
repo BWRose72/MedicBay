@@ -115,7 +115,7 @@ function deleteUser(userId: number) {
                             <div
                                 v-for="u in props.users"
                                 :key="u.user_id"
-                                class="block rounded-2xl bg-primary/40 text-foreground backdrop-blur-sm p-5 sm:p-6 border border-border"
+                                class="block rounded-lg bg-card/85 text-foreground backdrop-blur-sm p-5 sm:p-6 border border-border"
                             >
                                 <div class="flex items-center justify-between gap-4">
                                     <div class="min-w-0">
@@ -159,10 +159,10 @@ function deleteUser(userId: number) {
                         </template>
 
                         <template v-else>
-                            <div class="flex items-center justify-center rounded-2xl bg-primary/20 p-5 sm:p-6 text-center text-foreground" style="height: 120px">
+                            <div class="flex items-center justify-center rounded-lg bg-card/80 p-5 sm:p-6 text-center text-foreground border border-border" style="height: 120px">
                                 No users found.
                             </div>
-                            <div v-for="n in 3" :key="n" class="rounded-2xl bg-primary/0 p-5 sm:p-6 opacity-60" style="height: 120px"></div>
+                            <div v-for="n in 3" :key="n" class="rounded-lg bg-primary/0 p-5 sm:p-6 opacity-60" style="height: 120px"></div>
                         </template>
                     </div>
                 </div>
@@ -172,7 +172,7 @@ function deleteUser(userId: number) {
                     <div class="absolute inset-0 bg-black/40"></div>
 
                     <div class="absolute inset-0 flex items-center justify-center p-4">
-                        <div class="w-full max-w-xl rounded-2xl bg-card border border-border shadow-lg p-6">
+                        <div class="w-full max-w-xl rounded-lg bg-card border border-border shadow-lg p-6">
                             <div class="flex items-center justify-between gap-4">
                                 <div class="text-lg font-semibold text-foreground">Make Doctor</div>
                                 <button type="button" class="nav-link" @click="closeMakeDoctor">Close</button>
