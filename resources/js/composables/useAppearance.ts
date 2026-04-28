@@ -15,7 +15,8 @@ const appearance = ref<Appearance>('light');
 const setLightPreference = () => {
     if (typeof document !== 'undefined') {
         document.documentElement.classList.remove('dark');
-        document.cookie = 'appearance=light;path=/;max-age=31536000;SameSite=Lax';
+        document.cookie =
+            'appearance=light;path=/;max-age=31536000;SameSite=Lax';
     }
 
     if (typeof window !== 'undefined') {

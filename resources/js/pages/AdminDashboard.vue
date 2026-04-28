@@ -1,8 +1,13 @@
 <template>
-    <section class="rounded-lg border border-border bg-card/70 p-6 backdrop-blur-sm">
-        <h2 class="text-lg font-semibold text-foreground">Administrative workspace</h2>
+    <section
+        class="rounded-lg border border-border bg-card/70 p-6 backdrop-blur-sm"
+    >
+        <h2 class="text-lg font-semibold text-foreground">
+            Administrative workspace
+        </h2>
         <p class="mt-2 text-sm text-muted-foreground">
-            Review user access, doctor profiles, and daily operational activity from the admin tools.
+            Review user access, doctor profiles, and daily operational activity
+            from the admin tools.
         </p>
 
         <div class="mt-6 grid gap-3 sm:grid-cols-2">

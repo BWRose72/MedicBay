@@ -22,7 +22,7 @@ final class AllUsersController extends Controller
     {
         $actor = $request->user();
 
-        if (!$actor || !method_exists($actor, 'hasRole') || !$actor->hasRole('admin')) {
+        if (! $actor || ! method_exists($actor, 'hasRole') || ! $actor->hasRole('admin')) {
             abort(HttpResponse::HTTP_FORBIDDEN);
         }
 
@@ -91,7 +91,7 @@ final class AllUsersController extends Controller
     {
         $actor = $request->user();
 
-        if (!$actor || !method_exists($actor, 'hasRole') || !$actor->hasRole('admin')) {
+        if (! $actor || ! method_exists($actor, 'hasRole') || ! $actor->hasRole('admin')) {
             abort(HttpResponse::HTTP_FORBIDDEN);
         }
 
@@ -146,7 +146,7 @@ final class AllUsersController extends Controller
     {
         $actor = $request->user();
 
-        if (!$actor || !method_exists($actor, 'hasRole') || !$actor->hasRole('admin')) {
+        if (! $actor || ! method_exists($actor, 'hasRole') || ! $actor->hasRole('admin')) {
             abort(HttpResponse::HTTP_FORBIDDEN);
         }
 
@@ -176,7 +176,7 @@ final class AllUsersController extends Controller
     {
         $actor = $request->user();
 
-        if (!$actor || !method_exists($actor, 'hasRole') || !$actor->hasRole('admin')) {
+        if (! $actor || ! method_exists($actor, 'hasRole') || ! $actor->hasRole('admin')) {
             abort(HttpResponse::HTTP_FORBIDDEN);
         }
 

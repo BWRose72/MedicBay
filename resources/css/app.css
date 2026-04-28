@@ -70,7 +70,6 @@
   color utility to any element that depends on these defaults.
 */
 @layer base {
-
     *,
     ::after,
     ::before,
@@ -81,7 +80,6 @@
 }
 
 @layer utilities {
-
     body,
     html {
         --font-sans:
@@ -180,9 +178,13 @@
     }
 
     .content-bg {
-        @apply absolute inset-0 pointer-events-none;
+        @apply pointer-events-none absolute inset-0;
         background:
-            linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(244, 252, 235, 0.9) 100%),
+            linear-gradient(
+                180deg,
+                rgba(255, 255, 255, 0.96) 0%,
+                rgba(244, 252, 235, 0.9) 100%
+            ),
             url('/images/background.jpg');
         background-repeat: no-repeat;
         background-position: bottom center;
@@ -196,7 +198,7 @@
     }
 
     .content-overlay {
-        @apply absolute inset-0 pointer-events-none;
+        @apply pointer-events-none absolute inset-0;
         background: rgba(255, 255, 255, 0.2);
         z-index: 5;
     }
@@ -223,11 +225,11 @@
     }
 
     .section-title {
-        @apply text-3xl sm:text-4xl font-semibold tracking-tight text-slate-900 text-center;
+        @apply text-center text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl;
     }
 
     .section-text {
-        @apply mt-3 max-w-xl mx-auto text-base leading-7 text-slate-600 text-center;
+        @apply mx-auto mt-3 max-w-xl text-center text-base leading-7 text-slate-600;
     }
 
     .btn-primary {
@@ -243,7 +245,7 @@
     }
 
     .feature-image {
-        @apply rounded-lg w-full object-cover h-[360px];
+        @apply h-[360px] w-full rounded-lg object-cover;
     }
 
     .footer-title {

@@ -88,8 +88,10 @@ const roleLabel = computed(() => {
 
 const subtitle = computed(() => {
     if (props.dashboard_type === 'admin') return 'Operational overview';
-    if (props.dashboard_type === 'doctor') return "Today's appointments and follow-up work";
-    if (props.dashboard_type === 'patient') return 'Appointments, cancellations, and reviews';
+    if (props.dashboard_type === 'doctor')
+        return "Today's appointments and follow-up work";
+    if (props.dashboard_type === 'patient')
+        return 'Appointments, cancellations, and reviews';
     return 'No dashboard is configured for this account';
 });
 
@@ -102,46 +104,95 @@ const todayLabel = computed(() =>
     }).format(new Date()),
 );
 
-const doctorAppointments = computed<DoctorPayload>(() => (
+const doctorAppointments = computed<DoctorPayload>(() =>
     props.dashboard_type === 'doctor'
-        ? (props.appointments as DoctorPayload | undefined) ?? emptyDoctorPayload()
-        : emptyDoctorPayload()
-));
+        ? ((props.appointments as DoctorPayload | undefined) ??
+          emptyDoctorPayload())
+        : emptyDoctorPayload(),
+);
 
-const patientAppointments = computed<PatientPayload>(() => (
+const patientAppointments = computed<PatientPayload>(() =>
     props.dashboard_type === 'patient'
-        ? (props.appointments as PatientPayload | undefined) ?? emptyPatientPayload()
-        : emptyPatientPayload()
-));
+        ? ((props.appointments as PatientPayload | undefined) ??
+          emptyPatientPayload())
+        : emptyPatientPayload(),
+);
 
 const stats = computed<StatTile[]>(() => {
     if (props.dashboard_type === 'admin') {
         return [
-            { label: 'Users', value: props.dashboard_stats?.users ?? 0, detail: 'Active accounts' },
-            { label: 'Doctors', value: props.dashboard_stats?.doctors ?? 0, detail: 'Active profiles' },
-            { label: 'Patients', value: props.dashboard_stats?.patients ?? 0, detail: 'Active profiles' },
-            { label: 'Today', value: props.dashboard_stats?.appointments_today ?? 0, detail: 'Appointments' },
+            {
+                label: 'Users',
+                value: props.dashboard_stats?.users ?? 0,
+                detail: 'Active accounts',
+            },
+            {
+                label: 'Doctors',
+                value: props.dashboard_stats?.doctors ?? 0,
+                detail: 'Active profiles',
+            },
+            {
+                label: 'Patients',
+                value: props.dashboard_stats?.patients ?? 0,
+                detail: 'Active profiles',
+            },
+            {
+                label: 'Today',
+                value: props.dashboard_stats?.appointments_today ?? 0,
+                detail: 'Appointments',
+            },
         ];
     }
 
     if (props.dashboard_type === 'doctor') {
-        const pending = doctorAppointments.value.past.filter((appointment) => (appointment.status ?? 'scheduled') === 'scheduled').length;
+        const pending = doctorAppointments.value.past.filter(
+            (appointment) =>
+                (appointment.status ?? 'scheduled') === 'scheduled',
+        ).length;
 
         return [
-            { label: 'Current', value: doctorAppointments.value.current ? 'Active' : 'None', detail: 'Appointment now' },
-            { label: 'Remaining', value: doctorAppointments.value.future.length, detail: 'Later today' },
-            { label: 'Completed', value: doctorAppointments.value.past.filter((appointment) => appointment.status === 'completed').length, detail: 'Today' },
+            {
+                label: 'Current',
+                value: doctorAppointments.value.current ? 'Active' : 'None',
+                detail: 'Appointment now',
+            },
+            {
+                label: 'Remaining',
+                value: doctorAppointments.value.future.length,
+                detail: 'Later today',
+            },
+            {
+                label: 'Completed',
+                value: doctorAppointments.value.past.filter(
+                    (appointment) => appointment.status === 'completed',
+                ).length,
+                detail: 'Today',
+            },
             { label: 'Pending', value: pending, detail: 'Status updates' },
         ];
     }
 
     if (props.dashboard_type === 'patient') {
-        const reviewsAvailable = patientAppointments.value.past.filter((appointment) => appointment.can_review).length;
+        const reviewsAvailable = patientAppointments.value.past.filter(
+            (appointment) => appointment.can_review,
+        ).length;
 
         return [
-            { label: 'Current', value: patientAppointments.value.current ? 'Active' : 'None', detail: 'Appointment now' },
-            { label: 'Upcoming', value: patientAppointments.value.future.length, detail: 'Scheduled' },
-            { label: 'Past', value: patientAppointments.value.past.length, detail: 'History' },
+            {
+                label: 'Current',
+                value: patientAppointments.value.current ? 'Active' : 'None',
+                detail: 'Appointment now',
+            },
+            {
+                label: 'Upcoming',
+                value: patientAppointments.value.future.length,
+                detail: 'Scheduled',
+            },
+            {
+                label: 'Past',
+                value: patientAppointments.value.past.length,
+                detail: 'History',
+            },
             { label: 'Reviews', value: reviewsAvailable, detail: 'Available' },
         ];
     }
@@ -164,13 +215,19 @@ const stats = computed<StatTile[]>(() => {
 
         <div class="content-foreground">
             <div class="container-main section-spacing">
-                <header class="flex flex-col gap-4 border-b border-border pb-6 md:flex-row md:items-end md:justify-between">
+                <header
+                    class="flex flex-col gap-4 border-b border-border pb-6 md:flex-row md:items-end md:justify-between"
+                >
                     <div>
                         <div class="flex flex-wrap items-center gap-3">
-                            <h1 class="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+                            <h1
+                                class="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl"
+                            >
                                 Dashboard
                             </h1>
-                            <span class="rounded-md border border-border bg-card/70 px-3 py-1 text-xs font-semibold text-foreground">
+                            <span
+                                class="rounded-md border border-border bg-card/70 px-3 py-1 text-xs font-semibold text-foreground"
+                            >
                                 {{ roleLabel }}
                             </span>
                         </div>
@@ -184,7 +241,10 @@ const stats = computed<StatTile[]>(() => {
                     </div>
                 </header>
 
-                <div v-if="props.notice" class="mt-6 rounded-md border border-border bg-card/80 p-4 text-sm text-foreground">
+                <div
+                    v-if="props.notice"
+                    class="mt-6 rounded-md border border-border bg-card/80 p-4 text-sm text-foreground"
+                >
                     {{ props.notice }}
                 </div>
 
@@ -194,10 +254,14 @@ const stats = computed<StatTile[]>(() => {
                         :key="stat.label"
                         class="rounded-lg border border-border bg-card/70 p-4 backdrop-blur-sm"
                     >
-                        <div class="text-xs font-semibold uppercase text-muted-foreground">
+                        <div
+                            class="text-xs font-semibold text-muted-foreground uppercase"
+                        >
                             {{ stat.label }}
                         </div>
-                        <div class="mt-2 text-2xl font-semibold text-foreground">
+                        <div
+                            class="mt-2 text-2xl font-semibold text-foreground"
+                        >
                             {{ stat.value }}
                         </div>
                         <div class="mt-1 text-sm text-muted-foreground">
@@ -208,20 +272,42 @@ const stats = computed<StatTile[]>(() => {
 
                 <div class="mt-8 grid gap-6 xl:grid-cols-[minmax(0,1fr)_18rem]">
                     <main class="min-w-0">
-                        <AdminDashboard v-if="props.dashboard_type === 'admin'" />
-                        <DoctorDashboard v-else-if="props.dashboard_type === 'doctor'" :appointments="doctorAppointments" />
-                        <PatientDashboard v-else-if="props.dashboard_type === 'patient'" :appointments="patientAppointments" />
+                        <AdminDashboard
+                            v-if="props.dashboard_type === 'admin'"
+                        />
+                        <DoctorDashboard
+                            v-else-if="props.dashboard_type === 'doctor'"
+                            :appointments="doctorAppointments"
+                        />
+                        <PatientDashboard
+                            v-else-if="props.dashboard_type === 'patient'"
+                            :appointments="patientAppointments"
+                        />
 
-                        <div v-else class="rounded-lg border border-border bg-card/70 p-10 text-center">
-                            <h2 class="text-xl font-semibold text-foreground">Dashboard unavailable</h2>
-                            <p class="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-                                This account does not currently have a dashboard role. You can return home or browse doctors.
+                        <div
+                            v-else
+                            class="rounded-lg border border-border bg-card/70 p-10 text-center"
+                        >
+                            <h2 class="text-xl font-semibold text-foreground">
+                                Dashboard unavailable
+                            </h2>
+                            <p
+                                class="mx-auto mt-2 max-w-md text-sm text-muted-foreground"
+                            >
+                                This account does not currently have a dashboard
+                                role. You can return home or browse doctors.
                             </p>
                             <div class="mt-6 flex justify-center gap-3">
-                                <Link href="/" class="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90">
+                                <Link
+                                    href="/"
+                                    class="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90"
+                                >
                                     Home
                                 </Link>
-                                <Link href="/doctors" class="rounded-md border border-border bg-background/70 px-4 py-2 text-sm font-semibold text-foreground hover:bg-muted">
+                                <Link
+                                    href="/doctors"
+                                    class="rounded-md border border-border bg-background/70 px-4 py-2 text-sm font-semibold text-foreground hover:bg-muted"
+                                >
                                     Doctors
                                 </Link>
                             </div>
@@ -229,8 +315,12 @@ const stats = computed<StatTile[]>(() => {
                     </main>
 
                     <aside class="space-y-4">
-                        <section class="rounded-lg border border-border bg-card/70 p-4 backdrop-blur-sm">
-                            <h2 class="text-sm font-semibold text-foreground">Quick actions</h2>
+                        <section
+                            class="rounded-lg border border-border bg-card/70 p-4 backdrop-blur-sm"
+                        >
+                            <h2 class="text-sm font-semibold text-foreground">
+                                Quick actions
+                            </h2>
                             <div class="mt-4 grid gap-2">
                                 <Link
                                     v-if="props.dashboard_type === 'admin'"
@@ -262,9 +352,15 @@ const stats = computed<StatTile[]>(() => {
                             </div>
                         </section>
 
-                        <section class="rounded-lg border border-border bg-card/70 p-4 text-sm text-muted-foreground backdrop-blur-sm">
-                            <h2 class="text-sm font-semibold text-foreground">Alerts</h2>
-                            <p class="mt-3" v-if="props.notice">{{ props.notice }}</p>
+                        <section
+                            class="rounded-lg border border-border bg-card/70 p-4 text-sm text-muted-foreground backdrop-blur-sm"
+                        >
+                            <h2 class="text-sm font-semibold text-foreground">
+                                Alerts
+                            </h2>
+                            <p class="mt-3" v-if="props.notice">
+                                {{ props.notice }}
+                            </p>
                             <p class="mt-3" v-else>No new alerts.</p>
                         </section>
                     </aside>

@@ -2,8 +2,10 @@
 
 namespace Database\Factories;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Enums\AppointmentStatus;
+use App\Models\Doctor;
+use App\Models\Patient;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Appointment>
@@ -18,7 +20,9 @@ class AppointmentFactory extends Factory
     public function definition(): array
     {
         return [
-            'start_time' => fake()->time(),
+            'doctor_id' => Doctor::factory(),
+            'patient_id' => Patient::factory(),
+            'start_time' => fake()->dateTimeBetween('+1 day', '+1 month'),
             'has_left_review' => false,
             'status' => AppointmentStatus::Scheduled,
         ];

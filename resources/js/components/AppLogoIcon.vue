@@ -13,7 +13,7 @@ defineProps<Props>();
 </script>
 
 <template>
-    <Link href="/" class="text-3xl font-bold text-primary tracking-tight">
-    MedicBay
-</Link>
+    <Link href="/" class="text-3xl font-bold tracking-tight text-primary">
+        MedicBay
+    </Link>
 </template>

@@ -24,7 +24,11 @@ const props = defineProps<{
 const searchForm = useForm({ q: props.q ?? '' });
 
 function submitSearch() {
-    router.get('/admin/users', { q: searchForm.q || undefined }, { preserveState: true, preserveScroll: true, replace: true });
+    router.get(
+        '/admin/users',
+        { q: searchForm.q || undefined },
+        { preserveState: true, preserveScroll: true, replace: true },
+    );
 }
 
 function clearSearch() {
@@ -47,7 +51,8 @@ function openMakeDoctor(u: UserRow) {
     makeDoctorForm.name = u.name;
     makeDoctorForm.phone = u.phone ?? '';
     makeDoctorForm.bio = '';
-    makeDoctorForm.specialisation_id = props.specialisations[0]?.specialisation_id ?? 0;
+    makeDoctorForm.specialisation_id =
+        props.specialisations[0]?.specialisation_id ?? 0;
     showMakeDoctor.open = true;
 }
 
@@ -83,26 +88,44 @@ function deleteUser(userId: number) {
         <div class="content-foreground">
             <div class="container-main section-spacing">
                 <div class="flex items-center justify-between gap-4">
-                    <h1 class="text-3xl sm:text-4xl font-semibold tracking-tight text-foreground">All Users</h1>
+                    <h1
+                        class="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl"
+                    >
+                        All Users
+                    </h1>
                     <a href="/" class="nav-link">Back</a>
                 </div>
 
                 <!-- Search -->
-                <form class="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between" @submit.prevent="submitSearch">
-                    <label class="text-sm font-semibold text-foreground" for="nameSearch">Search by name</label>
+                <form
+                    class="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+                    @submit.prevent="submitSearch"
+                >
+                    <label
+                        class="text-sm font-semibold text-foreground"
+                        for="nameSearch"
+                        >Search by name</label
+                    >
 
-                    <div class="flex w-full sm:w-auto items-center gap-2">
+                    <div class="flex w-full items-center gap-2 sm:w-auto">
                         <input
                             id="nameSearch"
                             v-model="searchForm.q"
                             type="text"
-                            class="w-full sm:w-80 rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground"
+                            class="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground sm:w-80"
                             placeholder="Type a name..."
                         />
-                        <button type="submit" class="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90">
+                        <button
+                            type="submit"
+                            class="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90"
+                        >
                             Search
                         </button>
-                        <button type="button" class="rounded-md border border-border bg-background/70 px-4 py-2 text-sm font-semibold text-foreground hover:bg-muted" @click="clearSearch">
+                        <button
+                            type="button"
+                            class="rounded-md border border-border bg-background/70 px-4 py-2 text-sm font-semibold text-foreground hover:bg-muted"
+                            @click="clearSearch"
+                        >
                             Clear
                         </button>
                     </div>
@@ -115,19 +138,27 @@ function deleteUser(userId: number) {
                             <div
                                 v-for="u in props.users"
                                 :key="u.user_id"
-                                class="block rounded-lg bg-card/85 text-foreground backdrop-blur-sm p-5 sm:p-6 border border-border"
+                                class="block rounded-lg border border-border bg-card/85 p-5 text-foreground backdrop-blur-sm sm:p-6"
                             >
-                                <div class="flex items-center justify-between gap-4">
+                                <div
+                                    class="flex items-center justify-between gap-4"
+                                >
                                     <div class="min-w-0">
-                                        <div class="text-xl font-semibold tracking-tight truncate">
+                                        <div
+                                            class="truncate text-xl font-semibold tracking-tight"
+                                        >
                                             {{ u.name }}
                                         </div>
-                                        <div class="mt-1 text-sm text-foreground/80 truncate">
+                                        <div
+                                            class="mt-1 truncate text-sm text-foreground/80"
+                                        >
                                             {{ u.email }} · {{ u.type }}
                                         </div>
                                     </div>
 
-                                    <div class="flex items-center gap-2 shrink-0">
+                                    <div
+                                        class="flex shrink-0 items-center gap-2"
+                                    >
                                         <button
                                             v-if="u.type === 'patient'"
                                             type="button"
@@ -159,10 +190,18 @@ function deleteUser(userId: number) {
                         </template>
 
                         <template v-else>
-                            <div class="flex items-center justify-center rounded-lg bg-card/80 p-5 sm:p-6 text-center text-foreground border border-border" style="height: 120px">
+                            <div
+                                class="flex items-center justify-center rounded-lg border border-border bg-card/80 p-5 text-center text-foreground sm:p-6"
+                                style="height: 120px"
+                            >
                                 No users found.
                             </div>
-                            <div v-for="n in 3" :key="n" class="rounded-lg bg-primary/0 p-5 sm:p-6 opacity-60" style="height: 120px"></div>
+                            <div
+                                v-for="n in 3"
+                                :key="n"
+                                class="rounded-lg bg-primary/0 p-5 opacity-60 sm:p-6"
+                                style="height: 120px"
+                            ></div>
                         </template>
                     </div>
                 </div>
@@ -171,53 +210,111 @@ function deleteUser(userId: number) {
                 <div v-if="showMakeDoctor.open" class="fixed inset-0 z-[60]">
                     <div class="absolute inset-0 bg-black/40"></div>
 
-                    <div class="absolute inset-0 flex items-center justify-center p-4">
-                        <div class="w-full max-w-xl rounded-lg bg-card border border-border shadow-lg p-6">
-                            <div class="flex items-center justify-between gap-4">
-                                <div class="text-lg font-semibold text-foreground">Make Doctor</div>
-                                <button type="button" class="nav-link" @click="closeMakeDoctor">Close</button>
+                    <div
+                        class="absolute inset-0 flex items-center justify-center p-4"
+                    >
+                        <div
+                            class="w-full max-w-xl rounded-lg border border-border bg-card p-6 shadow-lg"
+                        >
+                            <div
+                                class="flex items-center justify-between gap-4"
+                            >
+                                <div
+                                    class="text-lg font-semibold text-foreground"
+                                >
+                                    Make Doctor
+                                </div>
+                                <button
+                                    type="button"
+                                    class="nav-link"
+                                    @click="closeMakeDoctor"
+                                >
+                                    Close
+                                </button>
                             </div>
 
                             <div class="mt-5 space-y-4">
                                 <div>
-                                    <label class="block text-sm font-semibold text-foreground">Name</label>
-                                    <input v-model="makeDoctorForm.name" class="mt-2 w-full rounded-md border border-border bg-background px-3 py-2 text-foreground" />
-                                    <div v-if="makeDoctorForm.errors.name" class="mt-2 text-sm text-destructive">
+                                    <label
+                                        class="block text-sm font-semibold text-foreground"
+                                        >Name</label
+                                    >
+                                    <input
+                                        v-model="makeDoctorForm.name"
+                                        class="mt-2 w-full rounded-md border border-border bg-background px-3 py-2 text-foreground"
+                                    />
+                                    <div
+                                        v-if="makeDoctorForm.errors.name"
+                                        class="mt-2 text-sm text-destructive"
+                                    >
                                         {{ makeDoctorForm.errors.name }}
                                     </div>
                                 </div>
 
                                 <div>
-                                    <label class="block text-sm font-semibold text-foreground">Phone</label>
-                                    <input v-model="makeDoctorForm.phone" class="mt-2 w-full rounded-md border border-border bg-background px-3 py-2 text-foreground" />
-                                    <div v-if="makeDoctorForm.errors.phone" class="mt-2 text-sm text-destructive">
+                                    <label
+                                        class="block text-sm font-semibold text-foreground"
+                                        >Phone</label
+                                    >
+                                    <input
+                                        v-model="makeDoctorForm.phone"
+                                        class="mt-2 w-full rounded-md border border-border bg-background px-3 py-2 text-foreground"
+                                    />
+                                    <div
+                                        v-if="makeDoctorForm.errors.phone"
+                                        class="mt-2 text-sm text-destructive"
+                                    >
                                         {{ makeDoctorForm.errors.phone }}
                                     </div>
                                 </div>
 
                                 <div>
-                                    <label class="block text-sm font-semibold text-foreground">Specialisation</label>
+                                    <label
+                                        class="block text-sm font-semibold text-foreground"
+                                        >Specialisation</label
+                                    >
                                     <select
-                                        v-model="makeDoctorForm.specialisation_id"
+                                        v-model="
+                                            makeDoctorForm.specialisation_id
+                                        "
                                         class="mt-2 w-full rounded-md border border-border bg-background px-3 py-2 text-foreground"
                                     >
-                                        <option v-for="s in props.specialisations" :key="s.specialisation_id" :value="s.specialisation_id">
+                                        <option
+                                            v-for="s in props.specialisations"
+                                            :key="s.specialisation_id"
+                                            :value="s.specialisation_id"
+                                        >
                                             {{ s.name }}
                                         </option>
                                     </select>
-                                    <div v-if="makeDoctorForm.errors.specialisation_id" class="mt-2 text-sm text-destructive">
-                                        {{ makeDoctorForm.errors.specialisation_id }}
+                                    <div
+                                        v-if="
+                                            makeDoctorForm.errors
+                                                .specialisation_id
+                                        "
+                                        class="mt-2 text-sm text-destructive"
+                                    >
+                                        {{
+                                            makeDoctorForm.errors
+                                                .specialisation_id
+                                        }}
                                     </div>
                                 </div>
 
                                 <div>
-                                    <label class="block text-sm font-semibold text-foreground">Bio (optional)</label>
+                                    <label
+                                        class="block text-sm font-semibold text-foreground"
+                                        >Bio (optional)</label
+                                    >
                                     <textarea
                                         v-model="makeDoctorForm.bio"
                                         rows="5"
                                         class="mt-2 w-full rounded-md border border-border bg-background px-3 py-2 text-foreground"
                                     ></textarea>
-                                    <div v-if="makeDoctorForm.errors.bio" class="mt-2 text-sm text-destructive">
+                                    <div
+                                        v-if="makeDoctorForm.errors.bio"
+                                        class="mt-2 text-sm text-destructive"
+                                    >
                                         {{ makeDoctorForm.errors.bio }}
                                     </div>
                                 </div>

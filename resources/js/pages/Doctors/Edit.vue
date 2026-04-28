@@ -122,11 +122,14 @@ function onPhotoChange(event: Event) {
             <div class="container-main section-spacing">
                 <div class="flex items-start justify-between gap-4">
                     <div>
-                        <h1 class="text-3xl sm:text-4xl font-semibold tracking-tight text-foreground">
+                        <h1
+                            class="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl"
+                        >
                             Edit profile
                         </h1>
                         <p class="mt-2 text-base text-muted-foreground">
-                            {{ props.doctor.display_name }} · {{ props.doctor.specialisation?.name || '—' }}
+                            {{ props.doctor.display_name }} ·
+                            {{ props.doctor.specialisation?.name || '—' }}
                         </p>
                     </div>
 
@@ -142,68 +145,104 @@ function onPhotoChange(event: Event) {
                             Save
                         </button>
 
-                        <Link :href="`/doctors/${props.doctor.doctor_id}`" class="nav-link">
+                        <Link
+                            :href="`/doctors/${props.doctor.doctor_id}`"
+                            class="nav-link"
+                        >
                             Back
                         </Link>
                     </div>
                 </div>
 
-                <form id="doctor-editor-form" class="mt-10 space-y-8" @submit.prevent="submit">
-                    <section class="rounded-lg bg-card/70 backdrop-blur-sm border border-border p-6 space-y-5">
+                <form
+                    id="doctor-editor-form"
+                    class="mt-10 space-y-8"
+                    @submit.prevent="submit"
+                >
+                    <section
+                        class="space-y-5 rounded-lg border border-border bg-card/70 p-6 backdrop-blur-sm"
+                    >
                         <div>
-                            <h2 class="text-xl font-semibold tracking-tight text-foreground">
+                            <h2
+                                class="text-xl font-semibold tracking-tight text-foreground"
+                            >
                                 Profile details
                             </h2>
                         </div>
 
                         <div>
-                            <label class="block text-sm font-semibold text-foreground">Name</label>
+                            <label
+                                class="block text-sm font-semibold text-foreground"
+                                >Name</label
+                            >
                             <input
                                 v-model="form.name"
                                 type="text"
                                 class="mt-2 w-full rounded-md border border-border bg-background px-3 py-2 text-foreground"
                             />
-                            <div v-if="form.errors.name" class="mt-2 text-sm text-destructive">
+                            <div
+                                v-if="form.errors.name"
+                                class="mt-2 text-sm text-destructive"
+                            >
                                 {{ form.errors.name }}
                             </div>
                         </div>
 
                         <div>
-                            <label class="block text-sm font-semibold text-foreground">Phone</label>
+                            <label
+                                class="block text-sm font-semibold text-foreground"
+                                >Phone</label
+                            >
                             <input
                                 v-model="form.phone"
                                 type="text"
                                 class="mt-2 w-full rounded-md border border-border bg-background px-3 py-2 text-foreground"
                             />
-                            <div v-if="form.errors.phone" class="mt-2 text-sm text-destructive">
+                            <div
+                                v-if="form.errors.phone"
+                                class="mt-2 text-sm text-destructive"
+                            >
                                 {{ form.errors.phone }}
                             </div>
                         </div>
 
                         <div>
-                            <label class="block text-sm font-semibold text-foreground">Bio</label>
+                            <label
+                                class="block text-sm font-semibold text-foreground"
+                                >Bio</label
+                            >
                             <textarea
                                 v-model="form.bio"
                                 rows="7"
                                 class="mt-2 w-full rounded-md border border-border bg-background px-3 py-2 text-foreground"
                             ></textarea>
-                            <div v-if="form.errors.bio" class="mt-2 text-sm text-destructive">
+                            <div
+                                v-if="form.errors.bio"
+                                class="mt-2 text-sm text-destructive"
+                            >
                                 {{ form.errors.bio }}
                             </div>
                         </div>
                     </section>
 
-                    <section class="rounded-lg bg-card/70 backdrop-blur-sm border border-border p-6 space-y-5">
+                    <section
+                        class="space-y-5 rounded-lg border border-border bg-card/70 p-6 backdrop-blur-sm"
+                    >
                         <div>
-                            <h2 class="text-xl font-semibold tracking-tight text-foreground">
+                            <h2
+                                class="text-xl font-semibold tracking-tight text-foreground"
+                            >
                                 Profile picture
                             </h2>
                             <p class="mt-2 text-sm text-muted-foreground">
-                                Upload a JPG, PNG, or WebP image. It will be saved as {{ props.doctor.doctor_id }}.jpg.
+                                Upload a JPG, PNG, or WebP image. It will be
+                                saved as {{ props.doctor.doctor_id }}.jpg.
                             </p>
                         </div>
 
-                        <div class="flex flex-col gap-5 sm:flex-row sm:items-center">
+                        <div
+                            class="flex flex-col gap-5 sm:flex-row sm:items-center"
+                        >
                             <img
                                 :src="props.doctor.photo_url"
                                 :alt="`Doctor ${props.doctor.name}`"
@@ -211,28 +250,42 @@ function onPhotoChange(event: Event) {
                             />
 
                             <div class="flex-1">
-                                <label class="block text-sm font-semibold text-foreground">Image file</label>
+                                <label
+                                    class="block text-sm font-semibold text-foreground"
+                                    >Image file</label
+                                >
                                 <input
                                     type="file"
                                     accept="image/jpeg,image/png,image/webp"
                                     class="mt-2 block w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground"
                                     @change="onPhotoChange"
                                 />
-                                <div v-if="form.errors.photo" class="mt-2 text-sm text-destructive">
+                                <div
+                                    v-if="form.errors.photo"
+                                    class="mt-2 text-sm text-destructive"
+                                >
                                     {{ form.errors.photo }}
                                 </div>
                             </div>
                         </div>
                     </section>
 
-                    <section class="rounded-lg bg-card/70 backdrop-blur-sm border border-border p-6">
-                        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <section
+                        class="rounded-lg border border-border bg-card/70 p-6 backdrop-blur-sm"
+                    >
+                        <div
+                            class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+                        >
                             <div>
-                                <h2 class="text-xl font-semibold tracking-tight text-foreground">
+                                <h2
+                                    class="text-xl font-semibold tracking-tight text-foreground"
+                                >
                                     Weekly schedule
                                 </h2>
                                 <p class="mt-2 text-sm text-muted-foreground">
-                                    Add the doctor&apos;s working intervals. Appointment slots are generated every 30 minutes inside these times.
+                                    Add the doctor&apos;s working intervals.
+                                    Appointment slots are generated every 30
+                                    minutes inside these times.
                                 </p>
                             </div>
 
@@ -245,31 +298,49 @@ function onPhotoChange(event: Event) {
                             </button>
                         </div>
 
-                        <div v-if="form.errors.schedule" class="mt-4 text-sm text-destructive">
+                        <div
+                            v-if="form.errors.schedule"
+                            class="mt-4 text-sm text-destructive"
+                        >
                             {{ form.errors.schedule }}
                         </div>
 
                         <div class="mt-6 space-y-4">
                             <div
                                 v-for="(row, index) in form.schedule"
-                                :key="row.working_hours_id ?? `new-schedule-${index}`"
-                                class="rounded-lg bg-background/60 border border-border p-4"
+                                :key="
+                                    row.working_hours_id ??
+                                    `new-schedule-${index}`
+                                "
+                                class="rounded-lg border border-border bg-background/60 p-4"
                             >
-                                <div class="grid gap-4 md:grid-cols-[1.2fr_1fr_1fr_auto] md:items-end">
+                                <div
+                                    class="grid gap-4 md:grid-cols-[1.2fr_1fr_1fr_auto] md:items-end"
+                                >
                                     <div>
-                                        <label class="block text-sm font-semibold text-foreground">Day</label>
+                                        <label
+                                            class="block text-sm font-semibold text-foreground"
+                                            >Day</label
+                                        >
                                         <select
                                             v-model.number="row.day_of_week"
                                             class="mt-2 w-full rounded-md border border-border bg-background px-3 py-2 text-foreground"
                                         >
-                                            <option v-for="day in weekDays" :key="day.value" :value="day.value">
+                                            <option
+                                                v-for="day in weekDays"
+                                                :key="day.value"
+                                                :value="day.value"
+                                            >
                                                 {{ day.label }}
                                             </option>
                                         </select>
                                     </div>
 
                                     <div>
-                                        <label class="block text-sm font-semibold text-foreground">Start</label>
+                                        <label
+                                            class="block text-sm font-semibold text-foreground"
+                                            >Start</label
+                                        >
                                         <input
                                             v-model="row.start_time"
                                             type="time"
@@ -279,7 +350,10 @@ function onPhotoChange(event: Event) {
                                     </div>
 
                                     <div>
-                                        <label class="block text-sm font-semibold text-foreground">End</label>
+                                        <label
+                                            class="block text-sm font-semibold text-foreground"
+                                            >End</label
+                                        >
                                         <input
                                             v-model="row.end_time"
                                             type="time"
@@ -300,21 +374,29 @@ function onPhotoChange(event: Event) {
 
                             <div
                                 v-if="form.schedule.length === 0"
-                                class="rounded-lg bg-background/40 border border-border p-6 text-center text-sm text-muted-foreground"
+                                class="rounded-lg border border-border bg-background/40 p-6 text-center text-sm text-muted-foreground"
                             >
                                 No working intervals yet.
                             </div>
                         </div>
                     </section>
 
-                    <section class="rounded-lg bg-card/70 backdrop-blur-sm border border-border p-6">
-                        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <section
+                        class="rounded-lg border border-border bg-card/70 p-6 backdrop-blur-sm"
+                    >
+                        <div
+                            class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+                        >
                             <div>
-                                <h2 class="text-xl font-semibold tracking-tight text-foreground">
+                                <h2
+                                    class="text-xl font-semibold tracking-tight text-foreground"
+                                >
                                     Time-off intervals
                                 </h2>
                                 <p class="mt-2 text-sm text-muted-foreground">
-                                    Block recurring time ranges inside working hours, such as lunch breaks or unavailable periods.
+                                    Block recurring time ranges inside working
+                                    hours, such as lunch breaks or unavailable
+                                    periods.
                                 </p>
                             </div>
 
@@ -327,19 +409,29 @@ function onPhotoChange(event: Event) {
                             </button>
                         </div>
 
-                        <div v-if="form.errors.time_offs" class="mt-4 text-sm text-destructive">
+                        <div
+                            v-if="form.errors.time_offs"
+                            class="mt-4 text-sm text-destructive"
+                        >
                             {{ form.errors.time_offs }}
                         </div>
 
                         <div class="mt-6 space-y-4">
                             <div
                                 v-for="(row, index) in form.time_offs"
-                                :key="row.time_off_id ?? `new-time-off-${index}`"
-                                class="rounded-lg bg-background/60 border border-border p-4"
+                                :key="
+                                    row.time_off_id ?? `new-time-off-${index}`
+                                "
+                                class="rounded-lg border border-border bg-background/60 p-4"
                             >
-                                <div class="grid gap-4 md:grid-cols-[1fr_1fr_auto] md:items-end">
+                                <div
+                                    class="grid gap-4 md:grid-cols-[1fr_1fr_auto] md:items-end"
+                                >
                                     <div>
-                                        <label class="block text-sm font-semibold text-foreground">Start</label>
+                                        <label
+                                            class="block text-sm font-semibold text-foreground"
+                                            >Start</label
+                                        >
                                         <input
                                             v-model="row.start_time"
                                             type="time"
@@ -349,7 +441,10 @@ function onPhotoChange(event: Event) {
                                     </div>
 
                                     <div>
-                                        <label class="block text-sm font-semibold text-foreground">End</label>
+                                        <label
+                                            class="block text-sm font-semibold text-foreground"
+                                            >End</label
+                                        >
                                         <input
                                             v-model="row.end_time"
                                             type="time"
@@ -370,7 +465,7 @@ function onPhotoChange(event: Event) {
 
                             <div
                                 v-if="form.time_offs.length === 0"
-                                class="rounded-lg bg-background/40 border border-border p-6 text-center text-sm text-muted-foreground"
+                                class="rounded-lg border border-border bg-background/40 p-6 text-center text-sm text-muted-foreground"
                             >
                                 No time-off intervals yet.
                             </div>

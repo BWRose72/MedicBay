@@ -9,20 +9,35 @@ import { Link } from '@inertiajs/vue3';
         </div>
 
         <footer class="border-t border-border bg-background">
-            <div class="mx-auto max-w-6xl px-4 py-10 text-sm text-muted-foreground sm:px-6">
-                <div class="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
+            <div
+                class="mx-auto max-w-6xl px-4 py-10 text-sm text-muted-foreground sm:px-6"
+            >
+                <div
+                    class="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between"
+                >
                     <div>
                         <p class="font-semibold text-foreground">MedicBay</p>
-                        <p class="mt-2">© {{ new Date().getFullYear() }} MedicBay. All rights reserved.</p>
+                        <p class="mt-2">
+                            © {{ new Date().getFullYear() }} MedicBay. All
+                            rights reserved.
+                        </p>
                     </div>
 
                     <div class="flex flex-col gap-2">
                         <p class="font-semibold text-foreground"></p>
                         <div class="flex flex-col gap-2 sm:flex-row sm:gap-4">
-                            <Link href="/about" class="hover:text-foreground">About</Link>
-                            <Link href="/doctors" class="hover:text-foreground">Doctors</Link>
-                            <Link href="/terms" class="hover:text-foreground">Terms &amp; Conditions</Link>
-                            <Link href="/privacy" class="hover:text-foreground">Privacy Policy</Link>
+                            <Link href="/about" class="hover:text-foreground"
+                                >About</Link
+                            >
+                            <Link href="/doctors" class="hover:text-foreground"
+                                >Doctors</Link
+                            >
+                            <Link href="/terms" class="hover:text-foreground"
+                                >Terms &amp; Conditions</Link
+                            >
+                            <Link href="/privacy" class="hover:text-foreground"
+                                >Privacy Policy</Link
+                            >
                         </div>
                     </div>
 

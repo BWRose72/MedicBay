@@ -24,7 +24,7 @@ final class AppointmentsController extends Controller
     {
         $user = $request->user();
 
-        if (!$user) {
+        if (! $user) {
             abort(Response::HTTP_FORBIDDEN);
         }
 
@@ -53,7 +53,7 @@ final class AppointmentsController extends Controller
     {
         $user = $request->user();
 
-        if (!$user || !method_exists($user, 'hasRole') || (!$user->hasRole('doctor') && !$user->hasRole('admin'))) {
+        if (! $user || ! method_exists($user, 'hasRole') || (! $user->hasRole('doctor') && ! $user->hasRole('admin'))) {
             abort(Response::HTTP_FORBIDDEN);
         }
 
@@ -63,7 +63,7 @@ final class AppointmentsController extends Controller
         $start = CarbonImmutable::parse($appointment->start_time, $timezone);
         $endsAt = CarbonImmutable::parse($appointment->ends_at, $timezone);
 
-        if ($isDoctor && !$isAdmin) {
+        if ($isDoctor && ! $isAdmin) {
             $doctor = Doctor::query()
                 ->withoutTrashed()
                 ->where('user_id', (int) $user->getKey())
@@ -77,7 +77,7 @@ final class AppointmentsController extends Controller
                 abort(Response::HTTP_UNPROCESSABLE_ENTITY, 'You can only set the status once for a scheduled appointment.');
             }
 
-            if (!$start->isToday() || $endsAt->isFuture()) {
+            if (! $start->isToday() || $endsAt->isFuture()) {
                 abort(Response::HTTP_UNPROCESSABLE_ENTITY, 'Doctors can only set status for today\'s past appointments.');
             }
         }
@@ -92,7 +92,7 @@ final class AppointmentsController extends Controller
 
         $to = AppointmentStatus::from((string) $validated['status']);
 
-        if ($isDoctor && !$isAdmin) {
+        if ($isDoctor && ! $isAdmin) {
             $appointment->transitionTo($to);
         } else {
             $appointment->status = $to;
@@ -107,7 +107,7 @@ final class AppointmentsController extends Controller
     {
         $user = $request->user();
 
-        if (!$user || !method_exists($user, 'hasRole') || (!$user->hasRole('doctor') && !$user->hasRole('admin'))) {
+        if (! $user || ! method_exists($user, 'hasRole') || (! $user->hasRole('doctor') && ! $user->hasRole('admin'))) {
             abort(Response::HTTP_FORBIDDEN);
         }
 
@@ -130,7 +130,7 @@ final class AppointmentsController extends Controller
             abort(Response::HTTP_UNPROCESSABLE_ENTITY, 'Only scheduled appointments can be cancelled.');
         }
 
-        if (!$appointment->start_time->isFuture()) {
+        if (! $appointment->start_time->isFuture()) {
             abort(Response::HTTP_UNPROCESSABLE_ENTITY, 'Only future appointments can be cancelled.');
         }
 
@@ -144,7 +144,7 @@ final class AppointmentsController extends Controller
     {
         $user = $request->user();
 
-        if (!$user || !method_exists($user, 'hasRole') || !$user->hasRole('patient')) {
+        if (! $user || ! method_exists($user, 'hasRole') || ! $user->hasRole('patient')) {
             abort(Response::HTTP_FORBIDDEN);
         }
 
@@ -183,7 +183,7 @@ final class AppointmentsController extends Controller
     {
         $user = $request->user();
 
-        if (!$user) {
+        if (! $user) {
             abort(Response::HTTP_FORBIDDEN);
         }
 

@@ -7,8 +7,8 @@ namespace App\Http\Controllers;
 use App\Models\Doctor;
 use App\Models\DoctorTimeOff;
 use App\Models\DoctorWorkingHour;
-use App\Services\DoctorServices;
 use App\Services\DoctorScheduleService;
+use App\Services\DoctorServices;
 use App\Services\ReviewServices;
 use App\Services\SpecialisationServices;
 use Carbon\CarbonImmutable;
@@ -19,7 +19,6 @@ use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
-
 
 final class DoctorsController extends Controller
 {
@@ -396,6 +395,7 @@ final class DoctorsController extends Controller
     }
 
     public function indexAdmin() {}
+
     public function create() {}
 
     private function authorizeDoctorEditor(Request $request, Doctor $doctor): void
@@ -410,7 +410,7 @@ final class DoctorsController extends Controller
                 || ($user->hasRole('doctor') && (int) $doctor->user_id === (int) $user->getKey())
             );
 
-        if (!$allowed) {
+        if (! $allowed) {
             abort(HttpResponse::HTTP_FORBIDDEN);
         }
     }

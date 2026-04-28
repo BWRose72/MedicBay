@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Patient>
@@ -19,7 +19,7 @@ class PatientFactory extends Factory
     {
         return [
             'user_id' => User::factory(),
-            'gender'=> $this->faker->randomElement(['male', 'female']),
+            'gender' => $this->faker->randomElement(['male', 'female']),
             'personal_identification_number' => fake()->unique()->numerify('##########'),
             'date_of_birth' => fake()->date(),
             'phone' => fake()->phoneNumber(),

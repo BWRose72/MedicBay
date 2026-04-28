@@ -70,13 +70,21 @@ const canEditDoctor = computed(() => {
     return (
         user.is_admin === true ||
         roles.includes('admin') ||
-        (roles.includes('doctor') && Number(user.id) === Number(props.doctor.user_id))
+        (roles.includes('doctor') &&
+            Number(user.id) === Number(props.doctor.user_id))
     );
 });
 
-const authUser = computed(() => page.props.auth?.user as AuthUser | null | undefined);
-const authRoles = computed(() => (Array.isArray(authUser.value?.roles) ? authUser.value.roles : []));
-const isAdmin = computed(() => authUser.value?.is_admin === true || authRoles.value.includes('admin'));
+const authUser = computed(
+    () => page.props.auth?.user as AuthUser | null | undefined,
+);
+const authRoles = computed(() =>
+    Array.isArray(authUser.value?.roles) ? authUser.value.roles : [],
+);
+const isAdmin = computed(
+    () =>
+        authUser.value?.is_admin === true || authRoles.value.includes('admin'),
+);
 const isDoctor = computed(() => authRoles.value.includes('doctor'));
 const isPatient = computed(() => authRoles.value.includes('patient'));
 const canSeePatientNames = computed(() => isAdmin.value || isDoctor.value);
@@ -128,7 +136,8 @@ function slotStatus(slot: AppointmentSlot): string {
 }
 
 function slotClasses(slot: AppointmentSlot): string {
-    const base = 'w-full rounded-md border px-4 py-3 text-left transition flex items-center justify-between gap-3';
+    const base =
+        'w-full rounded-md border px-4 py-3 text-left transition flex items-center justify-between gap-3';
 
     if (slot.taken) {
         return `${base} border-border bg-muted/70 text-muted-foreground`;
@@ -157,7 +166,8 @@ function togglePatientSummary(slot: AppointmentSlot): void {
         return;
     }
 
-    expandedSlotKey.value = expandedSlotKey.value === slot.start ? null : slot.start;
+    expandedSlotKey.value =
+        expandedSlotKey.value === slot.start ? null : slot.start;
 }
 
 function isPatientSummaryOpen(slot: AppointmentSlot): boolean {
@@ -165,7 +175,10 @@ function isPatientSummaryOpen(slot: AppointmentSlot): boolean {
 }
 
 function isSlotInteractive(slot: AppointmentSlot): boolean {
-    return (isPatient.value && slot.bookable && !slot.taken) || (slot.taken && canSeePatientNames.value);
+    return (
+        (isPatient.value && slot.bookable && !slot.taken) ||
+        (slot.taken && canSeePatientNames.value)
+    );
 }
 
 function handleSlotClick(slot: AppointmentSlot): void {
@@ -201,7 +214,6 @@ function patientAge(slot: AppointmentSlot): string {
 </script>
 
 <template>
-
     <Head :title="props.doctor.display_name" />
 
     <div class="content-wrap">
@@ -211,7 +223,9 @@ function patientAge(slot: AppointmentSlot): string {
             <div class="container-main section-spacing">
                 <div class="flex items-center justify-between gap-4">
                     <div>
-                        <h1 class="text-3xl sm:text-4xl font-semibold tracking-tight text-foreground">
+                        <h1
+                            class="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl"
+                        >
                             {{ props.doctor.display_name }}
                         </h1>
                         <p class="mt-2 text-base text-muted-foreground">
@@ -220,52 +234,113 @@ function patientAge(slot: AppointmentSlot): string {
                     </div>
 
                     <div class="flex items-center gap-3">
-                        <Link v-if="canEditDoctor" :href="`/doctors/${props.doctor.doctor_id}/edit`"
-                            class="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90">
+                        <Link
+                            v-if="canEditDoctor"
+                            :href="`/doctors/${props.doctor.doctor_id}/edit`"
+                            class="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90"
+                        >
                             Edit
                         </Link>
 
-                        <Link href="/doctors" class="nav-link">Back to doctors</Link>
+                        <Link href="/doctors" class="nav-link"
+                            >Back to doctors</Link
+                        >
                     </div>
                 </div>
 
-                <div class="mt-10 grid gap-8 lg:grid-cols-[1fr_480px] items-start">
-
+                <div
+                    class="mt-10 grid items-start gap-8 lg:grid-cols-[1fr_480px]"
+                >
                     <!-- LEFT COLUMN -->
                     <div class="space-y-6">
-
                         <!-- Larger photo -->
-                        <img :src="doctorImageUrl(props.doctor.doctor_id)" :alt="`Doctor ${props.doctor.name}`"
-                            class="mx-auto h-60 w-60 sm:h-72 sm:w-72 rounded-lg object-cover" loading="lazy"
-                            @error="(ev) => ((ev.target as HTMLImageElement).src = fallbackDoctorImage())" />
+                        <img
+                            :src="doctorImageUrl(props.doctor.doctor_id)"
+                            :alt="`Doctor ${props.doctor.name}`"
+                            class="mx-auto h-60 w-60 rounded-lg object-cover sm:h-72 sm:w-72"
+                            loading="lazy"
+                            @error="
+                                (ev) =>
+                                    ((ev.target as HTMLImageElement).src =
+                                        fallbackDoctorImage())
+                            "
+                        />
 
                         <!-- Larger white information box -->
-                        <div class="rounded-lg bg-card p-8 border border-border">
+                        <div
+                            class="rounded-lg border border-border bg-card p-8"
+                        >
                             <div class="mt-6 space-y-6 text-base">
                                 <div>
-                                    <div class="font-semibold text-foreground text-lg">Average ratings</div>
-                                    <div class="mt-2 text-muted-foreground" v-if="props.doctor.rating">
-                                        Professionalism: {{ props.doctor.rating.professionalism_avg !== null ? props.doctor.rating.professionalism_avg.toFixed(1) : '-' }},
-                                        <br />
-                                        Attitude: {{ props.doctor.rating.attitude_avg !== null ? props.doctor.rating.attitude_avg.toFixed(1) : '-' }}
-                                        <span class="ml-2 text-sm">({{ props.doctor.rating.reviews_count }} reviews)</span>
+                                    <div
+                                        class="text-lg font-semibold text-foreground"
+                                    >
+                                        Average ratings
                                     </div>
-                                    <div class="mt-2 text-muted-foreground" v-else>
+                                    <div
+                                        class="mt-2 text-muted-foreground"
+                                        v-if="props.doctor.rating"
+                                    >
+                                        Professionalism:
+                                        {{
+                                            props.doctor.rating
+                                                .professionalism_avg !== null
+                                                ? props.doctor.rating.professionalism_avg.toFixed(
+                                                      1,
+                                                  )
+                                                : '-'
+                                        }},
+                                        <br />
+                                        Attitude:
+                                        {{
+                                            props.doctor.rating.attitude_avg !==
+                                            null
+                                                ? props.doctor.rating.attitude_avg.toFixed(
+                                                      1,
+                                                  )
+                                                : '-'
+                                        }}
+                                        <span class="ml-2 text-sm"
+                                            >({{
+                                                props.doctor.rating
+                                                    .reviews_count
+                                            }}
+                                            reviews)</span
+                                        >
+                                    </div>
+                                    <div
+                                        class="mt-2 text-muted-foreground"
+                                        v-else
+                                    >
                                         Not enough ratings.
                                     </div>
                                 </div>
                                 <div>
-                                    <div class="font-semibold text-foreground text-lg">Phone</div>
+                                    <div
+                                        class="text-lg font-semibold text-foreground"
+                                    >
+                                        Phone
+                                    </div>
                                     <div class="mt-2 text-muted-foreground">
-                                        <span v-if="props.doctor.phone">{{ props.doctor.phone }}</span>
+                                        <span v-if="props.doctor.phone">{{
+                                            props.doctor.phone
+                                        }}</span>
                                         <span v-else>—</span>
                                     </div>
                                 </div>
 
                                 <div>
-                                    <div class="font-semibold text-foreground text-lg">Bio</div>
-                                    <div class="mt-3 text-muted-foreground leading-7">
-                                        <span v-if="props.doctor.bio">{{ props.doctor.bio }}</span>
+                                    <div
+                                        class="text-lg font-semibold text-foreground"
+                                    >
+                                        Bio
+                                    </div>
+                                    <div
+                                        class="mt-3 leading-7 text-muted-foreground"
+                                    >
+                                        <span v-if="props.doctor.bio">{{
+                                            props.doctor.bio
+                                        }}</span>
                                         <span v-else>No bio provided.</span>
                                     </div>
                                 </div>
@@ -274,18 +349,27 @@ function patientAge(slot: AppointmentSlot): string {
                     </div>
 
                     <!-- RIGHT COLUMN -->
-                    <div class="rounded-lg bg-card/80 backdrop-blur-sm p-8 min-h-[520px] flex flex-col border border-border">
-                        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div
+                        class="flex min-h-[520px] flex-col rounded-lg border border-border bg-card/80 p-8 backdrop-blur-sm"
+                    >
+                        <div
+                            class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+                        >
                             <div>
-                                <div class="text-2xl font-semibold text-foreground">
+                                <div
+                                    class="text-2xl font-semibold text-foreground"
+                                >
                                     Appointment slots
                                 </div>
                                 <div class="mt-2 text-sm text-foreground/80">
-                                    Slots close two hours before their start time.
+                                    Slots close two hours before their start
+                                    time.
                                 </div>
                             </div>
 
-                            <label class="text-sm font-semibold text-foreground">
+                            <label
+                                class="text-sm font-semibold text-foreground"
+                            >
                                 Date
                                 <input
                                     type="date"
@@ -296,33 +380,71 @@ function patientAge(slot: AppointmentSlot): string {
                             </label>
                         </div>
 
-                        <div v-if="slotError" class="mt-4 rounded-md border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                        <div
+                            v-if="slotError"
+                            class="mt-4 rounded-md border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+                        >
                             {{ slotError }}
                         </div>
 
                         <div class="mt-8 flex-1">
                             <template v-if="props.slots.length">
-                                <div class="max-h-[456px] space-y-3 overflow-y-auto pr-2">
+                                <div
+                                    class="max-h-[456px] space-y-3 overflow-y-auto pr-2"
+                                >
                                     <div
                                         v-for="slot in props.slots"
                                         :key="slot.start"
                                         :class="slotClasses(slot)"
-                                        :role="isSlotInteractive(slot) ? 'button' : undefined"
-                                        :tabindex="isSlotInteractive(slot) ? 0 : undefined"
-                                        :aria-disabled="!isSlotInteractive(slot)"
+                                        :role="
+                                            isSlotInteractive(slot)
+                                                ? 'button'
+                                                : undefined
+                                        "
+                                        :tabindex="
+                                            isSlotInteractive(slot)
+                                                ? 0
+                                                : undefined
+                                        "
+                                        :aria-disabled="
+                                            !isSlotInteractive(slot)
+                                        "
                                         @click="handleSlotClick(slot)"
-                                        @keydown.enter.prevent="handleSlotClick(slot)"
-                                        @keydown.space.prevent="handleSlotClick(slot)"
+                                        @keydown.enter.prevent="
+                                            handleSlotClick(slot)
+                                        "
+                                        @keydown.space.prevent="
+                                            handleSlotClick(slot)
+                                        "
                                     >
-                                        <div class="flex items-center justify-between gap-3">
+                                        <div
+                                            class="flex items-center justify-between gap-3"
+                                        >
                                             <span class="font-semibold">
                                                 {{ slot.time }}
                                             </span>
 
-                                            <span class="min-w-0 text-right text-sm">
-                                                <template v-if="slot.taken && canSeePatientNames">
-                                                    <span v-if="!isPatientSummaryOpen(slot)" class="font-semibold">
-                                                        {{ slot.patient_name ?? 'Unknown patient' }}
+                                            <span
+                                                class="min-w-0 text-right text-sm"
+                                            >
+                                                <template
+                                                    v-if="
+                                                        slot.taken &&
+                                                        canSeePatientNames
+                                                    "
+                                                >
+                                                    <span
+                                                        v-if="
+                                                            !isPatientSummaryOpen(
+                                                                slot,
+                                                            )
+                                                        "
+                                                        class="font-semibold"
+                                                    >
+                                                        {{
+                                                            slot.patient_name ??
+                                                            'Unknown patient'
+                                                        }}
                                                     </span>
                                                 </template>
 
@@ -332,27 +454,60 @@ function patientAge(slot: AppointmentSlot): string {
                                             </span>
                                         </div>
 
-                                        <div v-if="isPatientSummaryOpen(slot)" class="mt-3 border-t border-border/70 pt-3 text-sm text-muted-foreground">
-                                            <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                        <div
+                                            v-if="isPatientSummaryOpen(slot)"
+                                            class="mt-3 border-t border-border/70 pt-3 text-sm text-muted-foreground"
+                                        >
+                                            <div
+                                                class="grid grid-cols-1 gap-2 sm:grid-cols-2"
+                                            >
                                                 <div>
-                                                    <span class="font-semibold text-foreground">Name:</span>
-                                                    {{ slot.patient_name ?? 'Unknown patient' }}
+                                                    <span
+                                                        class="font-semibold text-foreground"
+                                                        >Name:</span
+                                                    >
+                                                    {{
+                                                        slot.patient_name ??
+                                                        'Unknown patient'
+                                                    }}
                                                 </div>
                                                 <div>
-                                                    <span class="font-semibold text-foreground">Gender:</span>
-                                                    {{ slot.patient_gender ?? '-' }}
+                                                    <span
+                                                        class="font-semibold text-foreground"
+                                                        >Gender:</span
+                                                    >
+                                                    {{
+                                                        slot.patient_gender ??
+                                                        '-'
+                                                    }}
                                                 </div>
                                                 <div>
-                                                    <span class="font-semibold text-foreground">Age:</span>
+                                                    <span
+                                                        class="font-semibold text-foreground"
+                                                        >Age:</span
+                                                    >
                                                     {{ patientAge(slot) }}
                                                 </div>
                                                 <div>
-                                                    <span class="font-semibold text-foreground">Phone:</span>
-                                                    {{ slot.patient_phone ?? '-' }}
+                                                    <span
+                                                        class="font-semibold text-foreground"
+                                                        >Phone:</span
+                                                    >
+                                                    {{
+                                                        slot.patient_phone ??
+                                                        '-'
+                                                    }}
                                                 </div>
                                                 <div class="sm:col-span-2">
-                                                    <span class="font-semibold text-foreground">Personal identification number:</span>
-                                                    {{ slot.patient_personal_identification_number ?? '-' }}
+                                                    <span
+                                                        class="font-semibold text-foreground"
+                                                        >Personal identification
+                                                        number:</span
+                                                    >
+                                                    {{
+                                                        slot.patient_personal_identification_number ??
+                                                        '-'
+                                                    }}
                                                 </div>
                                             </div>
                                         </div>
@@ -364,15 +519,20 @@ function patientAge(slot: AppointmentSlot): string {
                                 v-else
                                 class="flex min-h-[260px] items-center justify-center rounded-lg bg-background/40 p-6 text-center text-base text-muted-foreground"
                             >
-                                No appointment slots are available for this date.
+                                No appointment slots are available for this
+                                date.
                             </div>
                         </div>
                     </div>
-
                 </div>
 
-                <details v-if="isAdmin" class="mt-10 rounded-lg bg-card/70 backdrop-blur-sm border border-border">
-                    <summary class="cursor-pointer select-none px-6 py-4 text-lg font-semibold text-foreground">
+                <details
+                    v-if="isAdmin"
+                    class="mt-10 rounded-lg border border-border bg-card/70 backdrop-blur-sm"
+                >
+                    <summary
+                        class="cursor-pointer px-6 py-4 text-lg font-semibold text-foreground select-none"
+                    >
                         All ratings
                         <span class="ml-2 text-sm text-muted-foreground">
                             ({{ props.ratings.length }})
@@ -380,24 +540,36 @@ function patientAge(slot: AppointmentSlot): string {
                     </summary>
 
                     <div class="px-6 pb-6">
-                        <div v-if="props.ratings.length === 0" class="text-muted-foreground">
+                        <div
+                            v-if="props.ratings.length === 0"
+                            class="text-muted-foreground"
+                        >
                             No ratings yet.
                         </div>
 
-                        <div v-else class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+                        <div
+                            v-else
+                            class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3"
+                        >
                             <div
                                 v-for="rating in props.ratings"
                                 :key="rating.review_id"
                                 class="rounded-lg border border-border bg-background/70 p-5"
                             >
                                 <div class="text-sm text-muted-foreground">
-                                    {{ rating.appointment_date ?? 'Unknown date' }}
+                                    {{
+                                        rating.appointment_date ??
+                                        'Unknown date'
+                                    }}
                                 </div>
-                                <div class="mt-2 text-base font-semibold text-foreground">
+                                <div
+                                    class="mt-2 text-base font-semibold text-foreground"
+                                >
                                     {{ rating.patient_name }}
                                 </div>
                                 <div class="mt-3 text-sm text-muted-foreground">
-                                    Professionalism: {{ rating.professionalism }}
+                                    Professionalism:
+                                    {{ rating.professionalism }}
                                     <br />
                                     Attitude: {{ rating.attitude }}
                                 </div>

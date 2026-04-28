@@ -26,7 +26,9 @@ import { store } from '@/routes/register';
         >
             <div class="grid gap-6">
                 <div class="grid gap-2">
-                    <Label for="name">Name <span class="text-red-500">*</span></Label>
+                    <Label for="name"
+                        >Name <span class="text-red-500">*</span></Label
+                    >
                     <Input
                         id="name"
                         type="text"
@@ -41,7 +43,10 @@ import { store } from '@/routes/register';
                 </div>
 
                 <div class="grid gap-2">
-                    <Label for="email">Email address <span class="text-red-500">*</span></Label>
+                    <Label for="email"
+                        >Email address
+                        <span class="text-red-500">*</span></Label
+                    >
                     <Input
                         id="email"
                         type="email"
@@ -55,7 +60,9 @@ import { store } from '@/routes/register';
                 </div>
 
                 <div class="grid gap-2">
-                    <Label for="gender">Gender <span class="text-red-500">*</span></Label>
+                    <Label for="gender"
+                        >Gender <span class="text-red-500">*</span></Label
+                    >
                     <Input
                         id="gender"
                         type="text"
@@ -69,7 +76,10 @@ import { store } from '@/routes/register';
                 </div>
 
                 <div class="grid gap-2">
-                    <Label for="personal_identification_number">Personal identification number <span class="text-red-500">*</span></Label>
+                    <Label for="personal_identification_number"
+                        >Personal identification number
+                        <span class="text-red-500">*</span></Label
+                    >
                     <Input
                         id="personal_identification_number"
                         type="text"
@@ -78,11 +88,16 @@ import { store } from '@/routes/register';
                         name="personal_identification_number"
                         placeholder="Personal identification number"
                     />
-                    <InputError :message="errors.personal_identification_number" />
+                    <InputError
+                        :message="errors.personal_identification_number"
+                    />
                 </div>
 
                 <div class="grid gap-2">
-                    <Label for="date_of_birth">Date of birth <span class="text-red-500">*</span></Label>
+                    <Label for="date_of_birth"
+                        >Date of birth
+                        <span class="text-red-500">*</span></Label
+                    >
                     <Input
                         id="date_of_birth"
                         type="date"
@@ -108,7 +123,9 @@ import { store } from '@/routes/register';
                 </div>
 
                 <div class="grid gap-2">
-                    <Label for="password">Password <span class="text-red-500">*</span></Label>
+                    <Label for="password"
+                        >Password <span class="text-red-500">*</span></Label
+                    >
                     <Input
                         id="password"
                         type="password"
@@ -122,7 +139,10 @@ import { store } from '@/routes/register';
                 </div>
 
                 <div class="grid gap-2">
-                    <Label for="password_confirmation">Confirm password <span class="text-red-500">*</span></Label>
+                    <Label for="password_confirmation"
+                        >Confirm password
+                        <span class="text-red-500">*</span></Label
+                    >
                     <Input
                         id="password_confirmation"
                         type="password"

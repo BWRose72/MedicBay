@@ -1,9 +1,9 @@
 <?php
 
-use App\Http\Controllers\DoctorsController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\AppointmentsController;
 use App\Http\Controllers\Admin\AllUsersController;
+use App\Http\Controllers\AppointmentsController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DoctorsController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
@@ -27,10 +27,10 @@ Route::post('/appointments/{appointment}/review', [AppointmentsController::class
     ->name('appointments.leaveReview');
 
 Route::middleware(['auth', 'role:doctor|admin'])->group(function () {
-Route::patch('/appointments/{appointment}/status', [AppointmentsController::class, 'updateStatus'])
+    Route::patch('/appointments/{appointment}/status', [AppointmentsController::class, 'updateStatus'])
         ->name('appointments.updateStatus');
 
-Route::patch('/appointments/{appointment}/cancel', [AppointmentsController::class, 'cancel'])
+    Route::patch('/appointments/{appointment}/cancel', [AppointmentsController::class, 'cancel'])
         ->name('appointments.cancel');
 });
 
@@ -65,20 +65,20 @@ Route::post('/doctors/{doctor_id}/photo', [DoctorsController::class, 'updatePhot
     ->name('doctors.photo.update');
 
 Route::middleware(['auth', 'role:admin'])->group(function () {
-Route::get('/admin/doctors/create', [DoctorsController::class, 'create']);
-Route::get('/admin/doctors', [DoctorsController::class, 'indexAdmin']);
+    Route::get('/admin/doctors/create', [DoctorsController::class, 'create']);
+    Route::get('/admin/doctors', [DoctorsController::class, 'indexAdmin']);
 });
 
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
     Route::get('/users', [AllUsersController::class, 'index'])->name('admin.users.index');
 
-Route::patch('/users/{user}/make-doctor', [AllUsersController::class, 'makeDoctor'])
+    Route::patch('/users/{user}/make-doctor', [AllUsersController::class, 'makeDoctor'])
         ->name('admin.users.makeDoctor');
 
-Route::patch('/users/{user}/fire', [AllUsersController::class, 'fire'])
+    Route::patch('/users/{user}/fire', [AllUsersController::class, 'fire'])
         ->name('admin.users.fire');
 
-Route::delete('/users/{user}', [AllUsersController::class, 'destroy'])
+    Route::delete('/users/{user}', [AllUsersController::class, 'destroy'])
         ->name('admin.users.destroy');
 });
 

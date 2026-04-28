@@ -15,7 +15,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call(RoleSeeder::class);
         $this->call(SpecialisationSeeder::class);
-        
+
         $admin = User::updateOrCreate(
             ['email' => 'admin@example.com'],
             [

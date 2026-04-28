@@ -45,28 +45,42 @@ function initials(name?: string): string {
 
 <template>
     <AppShell class="flex-col">
-        <header class="sticky top-0 z-50 w-full bg-secondary text-secondary-foreground">
+        <header
+            class="sticky top-0 z-50 w-full bg-secondary text-secondary-foreground"
+        >
             <div class="container-main flex h-16 items-center justify-between">
                 <div class="flex items-center gap-6">
-                    <Link :href="$page.props.auth.user ? dashboard() : '/'"
-                        class="inline-flex items-center gap-2 rounded-md px-2 py-1 text-base font-semibold tracking-tight hover:bg-primary/20">
+                    <Link
+                        :href="$page.props.auth.user ? dashboard() : '/'"
+                        class="inline-flex items-center gap-2 rounded-md px-2 py-1 text-base font-semibold tracking-tight hover:bg-primary/20"
+                    >
                         <span
-                            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-primary-foreground/15">
+                            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-primary-foreground/15"
+                        >
                             M
                         </span>
                         <span>MedicBay</span>
                     </Link>
 
                     <nav class="hidden items-center gap-1 sm:flex">
-                        <Link href="/doctors" class="rounded-md px-3 py-2 text-sm font-medium hover:bg-primary/20">
+                        <Link
+                            href="/doctors"
+                            class="rounded-md px-3 py-2 text-sm font-medium hover:bg-primary/20"
+                        >
                             Doctors
                         </Link>
-                        <Link href="/about" class="rounded-md px-3 py-2 text-sm font-medium hover:bg-primary/20">
+                        <Link
+                            href="/about"
+                            class="rounded-md px-3 py-2 text-sm font-medium hover:bg-primary/20"
+                        >
                             About
                         </Link>
 
-                        <Link v-if="$page.props.auth.user && isAdmin" href="/admin/users"
-                            class="rounded-md px-3 py-2 text-sm font-medium hover:bg-primary/20">
+                        <Link
+                            v-if="$page.props.auth.user && isAdmin"
+                            href="/admin/users"
+                            class="rounded-md px-3 py-2 text-sm font-medium hover:bg-primary/20"
+                        >
                             All Users
                         </Link>
                     </nav>
@@ -75,16 +89,20 @@ function initials(name?: string): string {
                 <div class="flex items-center gap-2">
                     <div v-if="$page.props.auth.user" class="relative">
                         <!-- Wrapper creates a hover bridge -->
-                        <div class="group relative pt-2 -mt-2">
+                        <div class="group relative -mt-2 pt-2">
                             <!-- Trigger button -->
                             <div
-                                class="cursor-default select-none rounded-md border border-border bg-background/70 px-3 py-2 text-sm font-semibold text-foreground hover:bg-muted">
+                                class="cursor-default rounded-md border border-border bg-background/70 px-3 py-2 text-sm font-semibold text-foreground select-none hover:bg-muted"
+                            >
                                 <span class="inline-flex items-center gap-2">
                                     <span
-                                        class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-primary/25 text-foreground font-semibold">
+                                        class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-primary/25 font-semibold text-foreground"
+                                    >
                                         {{ initials(user?.name) }}
                                     </span>
-                                    <span class="hidden sm:inline max-w-[180px] truncate">
+                                    <span
+                                        class="hidden max-w-[180px] truncate sm:inline"
+                                    >
                                         {{ user?.name ?? 'Account' }}
                                     </span>
                                     <span class="opacity-70">▾</span>
@@ -92,48 +110,66 @@ function initials(name?: string): string {
                             </div>
 
                             <!-- Menu (hover only, no gap) -->
-                            <div class="invisible absolute right-0 top-full w-64 rounded-xl bg-card shadow-lg border border-border p-2 z-50
-                                       opacity-0 transition-opacity duration-150 delay-75
-                                       group-hover:visible group-hover:opacity-100 group-hover:delay-0">
+                            <div
+                                class="invisible absolute top-full right-0 z-50 w-64 rounded-xl border border-border bg-card p-2 opacity-0 shadow-lg transition-opacity delay-75 duration-150 group-hover:visible group-hover:opacity-100 group-hover:delay-0"
+                            >
                                 <div class="px-3 py-2">
-                                    <div class="text-sm font-semibold text-foreground truncate">
+                                    <div
+                                        class="truncate text-sm font-semibold text-foreground"
+                                    >
                                         {{ user?.name ?? 'User' }}
                                     </div>
-                                    <div class="text-xs text-muted-foreground truncate">
+                                    <div
+                                        class="truncate text-xs text-muted-foreground"
+                                    >
                                         {{ user?.email ?? '' }}
                                     </div>
                                 </div>
 
                                 <div class="my-2 h-px bg-border"></div>
 
-                                <Link :href="dashboard()"
-                                    class="block rounded-md px-3 py-2 text-sm text-foreground hover:bg-muted">
+                                <Link
+                                    :href="dashboard()"
+                                    class="block rounded-md px-3 py-2 text-sm text-foreground hover:bg-muted"
+                                >
                                     Dashboard
                                 </Link>
 
-                                <Link v-if="isAdmin" href="/admin/users"
-                                    class="block rounded-md px-3 py-2 text-sm text-foreground hover:bg-muted">
+                                <Link
+                                    v-if="isAdmin"
+                                    href="/admin/users"
+                                    class="block rounded-md px-3 py-2 text-sm text-foreground hover:bg-muted"
+                                >
                                     All Users
                                 </Link>
 
                                 <div class="my-2 h-px bg-border"></div>
 
-                                <Link :href="profileEdit().url"
-                                    class="block rounded-md px-3 py-2 text-sm text-foreground hover:bg-muted">
+                                <Link
+                                    :href="profileEdit().url"
+                                    class="block rounded-md px-3 py-2 text-sm text-foreground hover:bg-muted"
+                                >
                                     Profile settings
                                 </Link>
-                                <Link :href="passwordEdit().url"
-                                    class="block rounded-md px-3 py-2 text-sm text-foreground hover:bg-muted">
+                                <Link
+                                    :href="passwordEdit().url"
+                                    class="block rounded-md px-3 py-2 text-sm text-foreground hover:bg-muted"
+                                >
                                     Password settings
                                 </Link>
-                                <Link :href="twoFactorShow.url()"
-                                    class="block rounded-md px-3 py-2 text-sm text-foreground hover:bg-muted">
+                                <Link
+                                    :href="twoFactorShow.url()"
+                                    class="block rounded-md px-3 py-2 text-sm text-foreground hover:bg-muted"
+                                >
                                     Two-factor authentication
                                 </Link>
                                 <div class="my-2 h-px bg-border"></div>
 
-                                <Link :href="logout()" as="button"
-                                    class="w-full text-left rounded-md px-3 py-2 text-sm text-foreground hover:bg-muted">
+                                <Link
+                                    :href="logout()"
+                                    as="button"
+                                    class="w-full rounded-md px-3 py-2 text-left text-sm text-foreground hover:bg-muted"
+                                >
                                     Sign out
                                 </Link>
                             </div>
@@ -141,11 +177,17 @@ function initials(name?: string): string {
                     </div>
 
                     <template v-else>
-                        <Link :href="login()" class="rounded-md px-4 py-2 text-sm font-semibold hover:bg-primary/20">
+                        <Link
+                            :href="login()"
+                            class="rounded-md px-4 py-2 text-sm font-semibold hover:bg-primary/20"
+                        >
                             Log in
                         </Link>
-                        <Link v-if="canRegister" :href="register()"
-                            class="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90">
+                        <Link
+                            v-if="canRegister"
+                            :href="register()"
+                            class="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90"
+                        >
                             Sign up
                         </Link>
                     </template>
@@ -154,18 +196,25 @@ function initials(name?: string): string {
 
             <div class="border-t border-primary-foreground/15 sm:hidden">
                 <div class="container-main flex items-center gap-2 py-2">
-                    <Link href="/doctors"
-                        class="flex-1 rounded-md px-3 py-2 text-center text-sm font-medium hover:bg-primary/20">
+                    <Link
+                        href="/doctors"
+                        class="flex-1 rounded-md px-3 py-2 text-center text-sm font-medium hover:bg-primary/20"
+                    >
                         Doctors
                     </Link>
 
-                    <Link v-if="$page.props.auth.user && isAdmin" href="/admin/users"
-                        class="flex-1 rounded-md px-3 py-2 text-center text-sm font-medium hover:bg-primary/20">
+                    <Link
+                        v-if="$page.props.auth.user && isAdmin"
+                        href="/admin/users"
+                        class="flex-1 rounded-md px-3 py-2 text-center text-sm font-medium hover:bg-primary/20"
+                    >
                         All Users
                     </Link>
-                    
-                    <Link href="/about"
-                        class="flex-1 rounded-md px-3 py-2 text-center text-sm font-medium hover:bg-primary/20">
+
+                    <Link
+                        href="/about"
+                        class="flex-1 rounded-md px-3 py-2 text-center text-sm font-medium hover:bg-primary/20"
+                    >
                         About
                     </Link>
                 </div>

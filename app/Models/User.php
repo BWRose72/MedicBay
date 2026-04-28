@@ -54,11 +54,4 @@ class User extends Authenticatable
             'deleted_at' => 'datetime',
         ];
     }
-
-    protected static function booted()
-    {
-        static::created(function ($user) {
-            $user->assignRole('patient');
-        });
-    }
 }
