@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AllUsersController;
 use App\Http\Controllers\AppointmentsController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DoctorsController;
+use App\Http\Controllers\PatientsController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
@@ -63,6 +64,18 @@ Route::patch('/doctors/{doctor_id}/time-offs', [DoctorsController::class, 'updat
 Route::post('/doctors/{doctor_id}/photo', [DoctorsController::class, 'updatePhoto'])
     ->middleware(['auth'])
     ->name('doctors.photo.update');
+
+Route::get('/patients/{patient_id}', [PatientsController::class, 'show'])
+    ->middleware(['auth'])
+    ->name('patients.show');
+
+Route::get('/patients/{patient_id}/edit', [PatientsController::class, 'edit'])
+    ->middleware(['auth'])
+    ->name('patients.edit');
+
+Route::patch('/patients/{patient_id}', [PatientsController::class, 'update'])
+    ->middleware(['auth'])
+    ->name('patients.update');
 
 Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/admin/doctors/create', [DoctorsController::class, 'create']);

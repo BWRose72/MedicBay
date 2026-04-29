@@ -323,13 +323,6 @@ const stats = computed<StatTile[]>(() => {
                             </h2>
                             <div class="mt-4 grid gap-2">
                                 <Link
-                                    v-if="props.dashboard_type === 'admin'"
-                                    href="/admin/users"
-                                    class="rounded-md border border-border bg-background/70 px-3 py-2 text-sm font-semibold text-foreground hover:bg-muted"
-                                >
-                                    Manage users
-                                </Link>
-                                <Link
                                     v-if="props.dashboard_type === 'doctor'"
                                     href="/doctors"
                                     class="rounded-md border border-border bg-background/70 px-3 py-2 text-sm font-semibold text-foreground hover:bg-muted"

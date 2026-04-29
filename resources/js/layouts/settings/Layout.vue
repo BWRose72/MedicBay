@@ -13,12 +13,14 @@ import { type NavItem } from '@/types';
 
 type AuthUser = {
     doctor_id?: number | null;
+    patient_id?: number | null;
     roles?: string[];
 };
 
 const page = usePage();
 const user = page.props.auth?.user as AuthUser | undefined;
 const doctorId = user?.doctor_id ?? null;
+const patientId = user?.patient_id ?? null;
 
 const sidebarNavItems: NavItem[] = [
     ...(doctorId
@@ -26,6 +28,14 @@ const sidebarNavItems: NavItem[] = [
               {
                   title: 'Edit Doctor Profile',
                   href: editDoctor(doctorId),
+              },
+          ]
+        : []),
+    ...(patientId
+        ? [
+              {
+                  title: 'Edit Patient Profile',
+                  href: `/patients/${patientId}/edit`,
               },
           ]
         : []),

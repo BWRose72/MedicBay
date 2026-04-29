@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Models\Doctor;
+use App\Models\Patient;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -43,6 +44,12 @@ class HandleInertiaRequests extends Middleware
                 ->where('user_id', (int) $user->getKey())
                 ->value('doctor_id')
             : null;
+        $patientId = $user
+            ? Patient::query()
+                ->withoutTrashed()
+                ->where('user_id', (int) $user->getKey())
+                ->value('patient_id')
+            : null;
 
         return [
             ...parent::share($request),
@@ -58,6 +65,7 @@ class HandleInertiaRequests extends Middleware
                         : [],
                     'is_admin' => method_exists($user, 'hasRole') ? $user->hasRole('admin') : false,
                     'doctor_id' => $doctorId ? (int) $doctorId : null,
+                    'patient_id' => $patientId ? (int) $patientId : null,
                 ] : null,
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',

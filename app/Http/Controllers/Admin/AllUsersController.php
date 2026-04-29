@@ -44,15 +44,17 @@ final class AllUsersController extends Controller
             ->orderBy('name')
             ->get();
 
-        $patientPhones = Patient::query()
+        $patients = Patient::query()
             ->withoutTrashed()
             ->whereIn('user_id', $users->pluck('id'))
-            ->pluck('phone', 'user_id');
+            ->get(['patient_id', 'user_id', 'phone'])
+            ->keyBy('user_id');
 
         $users = $users
-            ->map(function (User $u) use ($patientPhones) {
+            ->map(function (User $u) use ($patients) {
                 $isDoctor = method_exists($u, 'hasRole') ? $u->hasRole('doctor') : false;
                 $isPatient = method_exists($u, 'hasRole') ? $u->hasRole('patient') : false;
+                $patient = $patients->get($u->getKey());
 
                 $doctorId = null;
                 if ($isDoctor) {
@@ -68,7 +70,8 @@ final class AllUsersController extends Controller
                     'email' => (string) $u->email,
                     'type' => $isDoctor ? 'doctor' : ($isPatient ? 'patient' : 'unknown'),
                     'doctor_id' => $doctorId ? (int) $doctorId : null,
-                    'phone' => $patientPhones->get($u->getKey()),
+                    'patient_id' => $patient ? (int) $patient->patient_id : null,
+                    'phone' => $patient?->phone,
                 ];
             })
             ->values();

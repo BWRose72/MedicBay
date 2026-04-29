@@ -12,12 +12,6 @@
 
         <div class="mt-6 grid gap-3 sm:grid-cols-2">
             <a
-                href="/admin/users"
-                class="rounded-md border border-border bg-background/70 p-4 text-sm font-semibold text-foreground hover:bg-muted"
-            >
-                Manage users
-            </a>
-            <a
                 href="/doctors"
                 class="rounded-md border border-border bg-background/70 p-4 text-sm font-semibold text-foreground hover:bg-muted"
             >

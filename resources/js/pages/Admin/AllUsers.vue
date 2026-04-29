@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, router, useForm } from '@inertiajs/vue3';
+import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import AppPageLayout from '@/layouts/AppPageLayout.vue';
 
 defineOptions({ layout: AppPageLayout });
@@ -12,6 +12,7 @@ type UserRow = {
     email: string;
     type: 'patient' | 'doctor' | 'unknown';
     doctor_id: number | null;
+    patient_id: number | null;
     phone: string | null;
 };
 
@@ -138,7 +139,12 @@ function deleteUser(userId: number) {
                             <div
                                 v-for="u in props.users"
                                 :key="u.user_id"
-                                class="block rounded-lg border border-border bg-card/85 p-5 text-foreground backdrop-blur-sm sm:p-6"
+                                class="block rounded-lg border p-5 text-foreground backdrop-blur-sm sm:p-6"
+                                :class="
+                                    u.type === 'doctor'
+                                        ? 'border-green-500/30 bg-green-500/10'
+                                        : 'border-border bg-card/85'
+                                "
                             >
                                 <div
                                     class="flex items-center justify-between gap-4"
@@ -159,6 +165,17 @@ function deleteUser(userId: number) {
                                     <div
                                         class="flex shrink-0 items-center gap-2"
                                     >
+                                        <Link
+                                            v-if="
+                                                u.type === 'patient' &&
+                                                u.patient_id
+                                            "
+                                            :href="`/patients/${u.patient_id}`"
+                                            class="rounded-md border border-border bg-background/70 px-3 py-2 text-sm font-semibold text-foreground hover:bg-muted"
+                                        >
+                                            View
+                                        </Link>
+
                                         <button
                                             v-if="u.type === 'patient'"
                                             type="button"

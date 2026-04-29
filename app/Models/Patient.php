@@ -25,6 +25,7 @@ class Patient extends Model
         'user_id',
         'gender',
         'personal_identification_number',
+        'medical_record_number',
         'date_of_birth',
         'phone',
     ];
@@ -69,5 +70,12 @@ class Patient extends Model
     public function getNameAttribute(): ?string
     {
         return $this->user?->name;
+    }
+
+    public function getPersonalIdentificationNumberAttribute(mixed $value): ?string
+    {
+        return $value !== null
+            ? (string) $value
+            : ($this->attributes['medical_record_number'] ?? null);
     }
 }

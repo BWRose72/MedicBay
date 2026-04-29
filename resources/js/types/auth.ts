@@ -3,6 +3,7 @@ export type User = {
     name: string;
     email: string;
     doctor_id?: number | null;
+    patient_id?: number | null;
     avatar?: string;
     email_verified_at: string | null;
     created_at: string;

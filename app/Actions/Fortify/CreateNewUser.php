@@ -8,6 +8,7 @@ use App\Models\Patient;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
 use Laravel\Fortify\Contracts\CreatesNewUsers;
 
@@ -22,20 +23,24 @@ class CreateNewUser implements CreatesNewUsers
      */
     public function create(array $input): User
     {
+        $identifierColumn = Schema::hasColumn('patients', 'personal_identification_number')
+            ? 'personal_identification_number'
+            : 'medical_record_number';
+
         Validator::make($input, [
             ...$this->profileRules(),
             'password' => $this->passwordRules(),
 
             // REQUIRED by your patients migration
             'gender' => ['required', 'string', 'max:50'],
-            'personal_identification_number' => ['required', 'string', 'max:50', 'unique:patients,personal_identification_number'],
+            'personal_identification_number' => ['required', 'string', 'max:50', "unique:patients,{$identifierColumn}"],
             'date_of_birth' => ['required', 'date'],
 
             // OPTIONAL in your patients migration
             'phone' => ['nullable', 'string', 'max:50'],
         ])->validate();
 
-        return DB::transaction(function () use ($input) {
+        return DB::transaction(function () use ($input, $identifierColumn) {
             $user = User::create([
                 'name' => (string) $input['name'],
                 'email' => (string) $input['email'],
@@ -50,7 +55,7 @@ class CreateNewUser implements CreatesNewUsers
             Patient::create([
                 'user_id' => (int) $user->id,
                 'gender' => (string) $input['gender'],
-                'personal_identification_number' => (string) $input['personal_identification_number'],
+                $identifierColumn => (string) $input['personal_identification_number'],
                 'date_of_birth' => (string) $input['date_of_birth'],
                 'phone' => $input['phone'] ?? null,
             ]);
