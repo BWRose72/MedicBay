@@ -10,6 +10,9 @@ use Illuminate\Auth\Access\AuthorizationException;
 
 final class PatientServices
 {
+    /**
+     * Find an active patient by id after authorizing the actor.
+     */
     public function findOrFail(User $actor, int $id): Patient
     {
         if (! $actor->can('patient.view')) {
@@ -22,6 +25,11 @@ final class PatientServices
             ->firstOrFail();
     }
 
+    /**
+     * Create a patient record after authorizing the actor.
+     *
+     * @param array<string, mixed> $attributes
+     */
     public function create(User $actor, array $attributes): Patient
     {
         if (! $actor->can('patient')) {
@@ -35,6 +43,11 @@ final class PatientServices
         return $patient;
     }
 
+    /**
+     * Update a patient record after authorizing the actor.
+     *
+     * @param array<string, mixed> $attributes
+     */
     public function update(User $actor, int $id, array $attributes): Patient
     {
         if (! $actor->can('patient')) {
@@ -52,6 +65,9 @@ final class PatientServices
         return $patient;
     }
 
+    /**
+     * Soft-delete a patient record after authorizing the actor.
+     */
     public function delete(User $actor, int $id): void
     {
         if (! $actor->can('patient')) {

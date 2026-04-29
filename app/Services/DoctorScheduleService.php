@@ -19,6 +19,24 @@ use InvalidArgumentException;
 
 final class DoctorScheduleService
 {
+    /**
+     * Build the appointment slot schedule for a doctor on a date.
+     *
+     * @return Collection<int, array{
+     *     appointment_id: int|null,
+     *     start: string,
+     *     end: string,
+     *     time: string,
+     *     taken: bool,
+     *     bookable: bool,
+     *     patient_id: int|null,
+     *     patient_name: string|null,
+     *     patient_gender: mixed,
+     *     patient_dob: string|null,
+     *     patient_phone: string|null,
+     *     patient_personal_identification_number: string|null
+     * }>
+     */
     public function slotsForDate(int $doctorId, CarbonImmutable $date): Collection
     {
         $timezone = $this->timezone();
@@ -83,6 +101,11 @@ final class DoctorScheduleService
         return $slots->values();
     }
 
+    /**
+     * Get only untaken slots for a doctor on a date.
+     *
+     * @return Collection<int, array{start: string, end: string}>
+     */
     public function freeSlotsForDate(int $doctorId, CarbonImmutable $date): Collection
     {
         return $this->slotsForDate($doctorId, $date)
@@ -94,6 +117,9 @@ final class DoctorScheduleService
             ->values();
     }
 
+    /**
+     * Book a 30-minute appointment slot for the acting patient.
+     */
     public function bookSlot(User $actor, int $doctorId, CarbonImmutable $slotStart): Appointment
     {
         $timezone = $this->timezone();
@@ -145,6 +171,11 @@ final class DoctorScheduleService
         });
     }
 
+    /**
+     * Get working-hours rows for a doctor on the date's ISO weekday.
+     *
+     * @return Collection<int, DoctorWorkingHour>
+     */
     private function workingHoursForDoctorAndDate(int $doctorId, CarbonImmutable $date): Collection
     {
         $iso = $date->dayOfWeekIso;
@@ -156,6 +187,11 @@ final class DoctorScheduleService
             ->get();
     }
 
+    /**
+     * Split a working-hours row into 30-minute Carbon slot ranges.
+     *
+     * @return array<int, array{start: CarbonImmutable, end: CarbonImmutable}>
+     */
     private function slotsFromWorkingHourRow(CarbonImmutable $date, DoctorWorkingHour $workingHour): array
     {
         $start = $this->combineDateAndTime($date, CarbonImmutable::parse($workingHour->start_time));
@@ -186,6 +222,11 @@ final class DoctorScheduleService
         return $slots;
     }
 
+    /**
+     * Get all time-off rows for a doctor.
+     *
+     * @return Collection<int, DoctorTimeOff>
+     */
     private function timeOffsForDoctor(int $doctorId): Collection
     {
         return DoctorTimeOff::query()
@@ -193,6 +234,9 @@ final class DoctorScheduleService
             ->get();
     }
 
+    /**
+     * Combine a date and a time into a single immutable value in the app timezone.
+     */
     private function combineDateAndTime(CarbonImmutable $date, CarbonImmutable $time): CarbonImmutable
     {
         return $date
@@ -200,6 +244,11 @@ final class DoctorScheduleService
             ->setTime((int) $time->format('H'), (int) $time->format('i'), 0);
     }
 
+    /**
+     * Determine whether a slot overlaps any doctor time-off interval.
+     *
+     * @param Collection<int, DoctorTimeOff> $timeOffs
+     */
     private function isSlotInsideTimeOff(CarbonImmutable $slotStart, CarbonImmutable $slotEnd, Collection $timeOffs): bool
     {
         foreach ($timeOffs as $timeOff) {
@@ -214,6 +263,9 @@ final class DoctorScheduleService
         return false;
     }
 
+    /**
+     * Assert that a requested slot fits fully inside the doctor's working hours.
+     */
     private function assertSlotIsWithinWorkingHours(int $doctorId, CarbonImmutable $slotStart): void
     {
         $date = $slotStart->startOfDay();
@@ -237,6 +289,9 @@ final class DoctorScheduleService
         throw new InvalidArgumentException('Requested slot is outside doctor working hours.');
     }
 
+    /**
+     * Assert that a requested slot does not overlap doctor time off.
+     */
     private function assertSlotIsNotInTimeOff(int $doctorId, CarbonImmutable $slotStart, CarbonImmutable $slotEnd): void
     {
         $timeOffs = $this->timeOffsForDoctor($doctorId);
@@ -246,6 +301,9 @@ final class DoctorScheduleService
         }
     }
 
+    /**
+     * Get the configured application timezone.
+     */
     private function timezone(): string
     {
         return (string) config('app.timezone', 'Europe/Sofia');

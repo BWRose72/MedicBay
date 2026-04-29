@@ -18,6 +18,9 @@ use InvalidArgumentException;
 
 final class ReviewServices
 {
+    /**
+     * Leave a review for a completed appointment within the review window.
+     */
     public function leaveReview(
         User $actor,
         int $appointmentId,
@@ -105,6 +108,11 @@ final class ReviewServices
         });
     }
 
+    /**
+     * Get all reviews for a doctor for an authorized admin.
+     *
+     * @return Collection<int, Review>
+     */
     public function adminDoctorReviews(User $actor, int $doctorId): Collection
     {
         if (! $actor->can('review.view')) {
@@ -122,6 +130,16 @@ final class ReviewServices
             ->get();
     }
 
+    /**
+     * Get the public rating summary for a doctor once enough reviews exist.
+     *
+     * @return array{
+     *     doctor_id: int,
+     *     reviews_count: int,
+     *     attitude_avg: float|null,
+     *     professionalism_avg: float|null
+     * }|null
+     */
     public function publicDoctorRatingSummary(int $doctorId): ?array
     {
         Doctor::query()
@@ -153,6 +171,9 @@ final class ReviewServices
         ];
     }
 
+    /**
+     * Assert that a rating value is within the accepted 1-10 range.
+     */
     private function assertRatingRange(int $value, string $field): void
     {
         if ($value < 1 || $value > 10) {

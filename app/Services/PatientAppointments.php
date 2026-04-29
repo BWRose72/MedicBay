@@ -15,6 +15,16 @@ use InvalidArgumentException;
 
 final class PatientAppointments
 {
+    /**
+     * Get upcoming scheduled appointments for a patient.
+     *
+     * @return Collection<int, array{
+     *     appointment_id: int,
+     *     doctor_id: int,
+     *     start_time: string,
+     *     status: string
+     * }>
+     */
     public function upcoming(User $actor, int $patientId): Collection
     {
         if (! $actor->can('patient')) {
@@ -39,6 +49,9 @@ final class PatientAppointments
             ->values();
     }
 
+    /**
+     * Cancel a scheduled appointment if more than two hours remain.
+     */
     public function cancelIfMoreThanTwoHoursRemain(User $actor, int $patientId, int $appointmentId): Appointment
     {
         if (! $actor->can('patient')) {
@@ -81,6 +94,15 @@ final class PatientAppointments
         return $appointment->refresh();
     }
 
+    /**
+     * Get completed patient appointments that are still eligible for review.
+     *
+     * @return Collection<int, array{
+     *     appointment_id: int,
+     *     doctor_id: int,
+     *     start_time: string
+     * }>
+     */
     public function completedUnreviewed(User $actor, int $patientId): Collection
     {
         if (! $actor->can('patient')) {
@@ -106,6 +128,16 @@ final class PatientAppointments
             ->values();
     }
 
+    /**
+     * Build the response payload for a patient appointment list.
+     *
+     * @return array{
+     *     appointment_id: int,
+     *     doctor_id: int,
+     *     start_time: string,
+     *     status?: string
+     * }
+     */
     private function appointmentPayload(Appointment $appointment, string $timezone, bool $includeStatus = false): array
     {
         $payload = [

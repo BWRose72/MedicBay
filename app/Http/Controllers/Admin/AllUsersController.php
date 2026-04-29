@@ -18,6 +18,9 @@ use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 final class AllUsersController extends Controller
 {
+    /**
+     * Render the admin user-management screen.
+     */
     public function index(Request $request): Response
     {
         $actor = $request->user();
@@ -87,6 +90,9 @@ final class AllUsersController extends Controller
         ]);
     }
 
+    /**
+     * Convert a non-admin user into a doctor and restore or create their doctor profile.
+     */
     public function makeDoctor(Request $request, User $user): RedirectResponse
     {
         $actor = $request->user();
@@ -142,6 +148,9 @@ final class AllUsersController extends Controller
         return back();
     }
 
+    /**
+     * Remove a user's doctor profile and restore them to the patient role.
+     */
     public function fire(Request $request, User $user): RedirectResponse
     {
         $actor = $request->user();
@@ -172,6 +181,9 @@ final class AllUsersController extends Controller
         return back();
     }
 
+    /**
+     * Soft-delete a non-admin user and any active patient or doctor profiles.
+     */
     public function destroy(Request $request, User $user): RedirectResponse
     {
         $actor = $request->user();
@@ -203,6 +215,9 @@ final class AllUsersController extends Controller
         return back();
     }
 
+    /**
+     * Prevent admin accounts from being modified by user-management actions.
+     */
     private function abortIfAdminUser(User $user): void
     {
         if (method_exists($user, 'hasRole') && $user->hasRole('admin')) {
@@ -210,6 +225,9 @@ final class AllUsersController extends Controller
         }
     }
 
+    /**
+     * Assign the doctor role while removing the patient role when present.
+     */
     private function promoteToDoctorRole(User $user): void
     {
         if (method_exists($user, 'hasRole') && method_exists($user, 'removeRole') && $user->hasRole('patient')) {

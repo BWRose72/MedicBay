@@ -11,6 +11,11 @@ use Illuminate\Support\Collection;
 
 final class DoctorServices
 {
+    /**
+     * Get all active doctors with their user relationship loaded.
+     *
+     * @return Collection<int, Doctor>
+     */
     public function all(): Collection
     {
         return Doctor::query()
@@ -19,6 +24,11 @@ final class DoctorServices
             ->get();
     }
 
+    /**
+     * Get all active doctors for a specialisation.
+     *
+     * @return Collection<int, Doctor>
+     */
     public function allBySpecialisationId(int $specialisationId): Collection
     {
         return Doctor::query()
@@ -28,6 +38,9 @@ final class DoctorServices
             ->get();
     }
 
+    /**
+     * Find an active doctor by id or fail.
+     */
     public function findOrFail(int $id): Doctor
     {
         return Doctor::query()
@@ -37,6 +50,11 @@ final class DoctorServices
             ->firstOrFail();
     }
 
+    /**
+     * Create a doctor record after authorizing the actor.
+     *
+     * @param array<string, mixed> $attributes
+     */
     public function create(User $actor, array $attributes): Doctor
     {
         if (! $actor->can('doctor.create')) {
@@ -50,6 +68,11 @@ final class DoctorServices
         return $doctor;
     }
 
+    /**
+     * Update a doctor record after authorizing the actor.
+     *
+     * @param array<string, mixed> $attributes
+     */
     public function update(User $actor, int $id, array $attributes): Doctor
     {
         if (! $actor->can('doctor.update')) {
@@ -63,6 +86,9 @@ final class DoctorServices
         return $doctor;
     }
 
+    /**
+     * Soft-delete a doctor record after authorizing the actor.
+     */
     public function delete(User $actor, int $id): void
     {
         if (! $actor->can('doctor')) {

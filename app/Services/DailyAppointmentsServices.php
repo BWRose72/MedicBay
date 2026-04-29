@@ -14,6 +14,18 @@ use Illuminate\Support\Collection;
 
 final class DailyAppointmentsServices
 {
+    /**
+     * Get all scheduled future appointments for a doctor.
+     *
+     * @return Collection<int, array{
+     *     appointment_id: int,
+     *     start_time: string|null,
+     *     patient_id: int,
+     *     patient_name: string|null,
+     *     patient_gender: mixed,
+     *     patient_age: mixed
+     * }>
+     */
     public function upcomingForDoctor(User $actor, int $doctorId): Collection
     {
         if (! $actor->can('doctor')) {
@@ -42,6 +54,18 @@ final class DailyAppointmentsServices
             ->values();
     }
 
+    /**
+     * Get all scheduled appointments for a doctor on a specific date.
+     *
+     * @return Collection<int, array{
+     *     appointment_id: int,
+     *     start_time: string|null,
+     *     patient_id: int,
+     *     patient_name: string|null,
+     *     patient_gender: mixed,
+     *     patient_age: mixed
+     * }>
+     */
     public function forDoctorOnDate(User $actor, int $doctorId, CarbonImmutable $date): Collection
     {
         if (! $actor->can('doctor')) {
@@ -71,6 +95,18 @@ final class DailyAppointmentsServices
             ->values();
     }
 
+    /**
+     * Build the response payload for a doctor's appointment list.
+     *
+     * @return array{
+     *     appointment_id: int,
+     *     start_time: string|null,
+     *     patient_id: int,
+     *     patient_name: string|null,
+     *     patient_gender: mixed,
+     *     patient_age: mixed
+     * }
+     */
     private function appointmentPayload(Appointment $appointment, string $timezone): array
     {
         return [

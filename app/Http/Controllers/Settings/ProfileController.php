@@ -44,7 +44,7 @@ class ProfileController extends Controller
     }
 
     /**
-     * Delete the user's profile.
+     * Delete the user's profile, related patient record, and authenticated session.
      */
     public function destroy(ProfileDeleteRequest $request): RedirectResponse
     {

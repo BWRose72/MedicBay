@@ -20,6 +20,9 @@ use Symfony\Component\HttpFoundation\Response;
 
 final class AppointmentsController extends Controller
 {
+    /**
+     * Book an appointment slot for the authenticated patient.
+     */
     public function store(Request $request, int $doctor_id, DoctorScheduleService $doctorScheduleService): RedirectResponse
     {
         $user = $request->user();
@@ -49,6 +52,9 @@ final class AppointmentsController extends Controller
         return back();
     }
 
+    /**
+     * Update an appointment status as an authorized doctor or admin.
+     */
     public function updateStatus(Request $request, Appointment $appointment): RedirectResponse
     {
         $user = $request->user();
@@ -103,6 +109,9 @@ final class AppointmentsController extends Controller
         return back();
     }
 
+    /**
+     * Cancel a future scheduled appointment as the assigned doctor or an admin.
+     */
     public function cancel(Request $request, Appointment $appointment): RedirectResponse
     {
         $user = $request->user();
@@ -140,6 +149,9 @@ final class AppointmentsController extends Controller
         return back();
     }
 
+    /**
+     * Cancel a patient's own appointment before the cancellation cutoff.
+     */
     public function patientCancel(Request $request, Appointment $appointment): RedirectResponse
     {
         $user = $request->user();
@@ -179,6 +191,9 @@ final class AppointmentsController extends Controller
         return back();
     }
 
+    /**
+     * Submit a patient review for a completed appointment.
+     */
     public function leaveReview(Request $request, Appointment $appointment, ReviewServices $reviewServices): RedirectResponse
     {
         $user = $request->user();

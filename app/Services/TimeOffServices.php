@@ -17,6 +17,9 @@ use InvalidArgumentException;
 
 final class TimeOffServices
 {
+    /**
+     * Create doctor time off and cancel overlapping scheduled appointments.
+     */
     public function createTimeOffAndCancelAppointments(
         User $actor,
         int $doctorId,
@@ -53,6 +56,9 @@ final class TimeOffServices
         });
     }
 
+    /**
+     * Update doctor time off and cancel appointments that overlap the new range.
+     */
     public function updateTimeOffAndCancelAppointments(
         User $actor,
         int $timeOffId,
@@ -89,6 +95,9 @@ final class TimeOffServices
         });
     }
 
+    /**
+     * Delete a doctor time-off entry after authorizing the actor.
+     */
     public function deleteTimeOff(User $actor, int $timeOffId): void
     {
         if (! $actor->can('doctor')) {
@@ -100,6 +109,9 @@ final class TimeOffServices
         $timeOff->delete();
     }
 
+    /**
+     * Cancel scheduled appointments that overlap a time-off range and notify patients.
+     */
     private function cancelAndNotifyOverlappingAppointments(
         Doctor $doctor,
         CarbonImmutable $start,
@@ -129,6 +141,9 @@ final class TimeOffServices
         }
     }
 
+    /**
+     * Send an appointment cancellation email to a patient when an address is available.
+     */
     private function sendCancellationEmail(
         string $doctorName,
         CarbonImmutable $appointmentStart,
@@ -156,6 +171,9 @@ final class TimeOffServices
         });
     }
 
+    /**
+     * Resolve the display name used for doctor cancellation messages.
+     */
     private function doctorDisplayName(Doctor $doctor): string
     {
         if (isset($doctor->display_name) && is_string($doctor->display_name) && $doctor->display_name !== '') {

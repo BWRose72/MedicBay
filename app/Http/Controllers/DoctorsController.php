@@ -22,6 +22,9 @@ use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 final class DoctorsController extends Controller
 {
+    /**
+     * List active doctors, optionally filtered by specialisation.
+     */
     public function index(
         Request $request,
         DoctorServices $doctorServices,
@@ -65,6 +68,9 @@ final class DoctorsController extends Controller
         ]);
     }
 
+    /**
+     * Show a doctor profile with appointment slots and visible rating data.
+     */
     public function show(
         Request $request,
         int $doctor_id,
@@ -156,6 +162,9 @@ final class DoctorsController extends Controller
         ]);
     }
 
+    /**
+     * Show the edit screen for an authorized doctor profile editor.
+     */
     public function edit(
         Request $request,
         int $doctor_id,
@@ -205,6 +214,9 @@ final class DoctorsController extends Controller
         ]);
     }
 
+    /**
+     * Update a doctor profile, weekly schedule, time off, and optional photo.
+     */
     public function update(
         Request $request,
         int $doctor_id,
@@ -295,6 +307,9 @@ final class DoctorsController extends Controller
         return back();
     }
 
+    /**
+     * Replace the weekly schedule for an authorized doctor profile editor.
+     */
     public function updateSchedule(Request $request, int $doctor_id, DoctorServices $doctorServices): RedirectResponse
     {
         $doctor = $doctorServices->findOrFail($doctor_id);
@@ -338,6 +353,9 @@ final class DoctorsController extends Controller
         return back();
     }
 
+    /**
+     * Replace time-off intervals for an authorized doctor profile editor.
+     */
     public function updateTimeOffs(Request $request, int $doctor_id, DoctorServices $doctorServices): RedirectResponse
     {
         $doctor = $doctorServices->findOrFail($doctor_id);
@@ -377,6 +395,9 @@ final class DoctorsController extends Controller
         return back();
     }
 
+    /**
+     * Update a doctor's profile photo.
+     */
     public function updatePhoto(Request $request, int $doctor_id, DoctorServices $doctorServices): RedirectResponse
     {
         $doctor = $doctorServices->findOrFail($doctor_id);
@@ -394,10 +415,19 @@ final class DoctorsController extends Controller
         return back();
     }
 
+    /**
+     * Reserved endpoint for the legacy admin doctors index.
+     */
     public function indexAdmin() {}
 
+    /**
+     * Reserved endpoint for the legacy doctor creation screen.
+     */
     public function create() {}
 
+    /**
+     * Abort unless the request user may edit the given doctor profile.
+     */
     private function authorizeDoctorEditor(Request $request, Doctor $doctor): void
     {
         $user = $request->user();
@@ -415,11 +445,17 @@ final class DoctorsController extends Controller
         }
     }
 
+    /**
+     * Format a stored time value as HH:MM in the application timezone.
+     */
     private function formatTime(mixed $value): string
     {
         return CarbonImmutable::parse((string) $value, (string) config('app.timezone', 'Europe/Sofia'))->format('H:i');
     }
 
+    /**
+     * Resolve a doctor's public profile photo URL with a cache-busting version.
+     */
     private function doctorPhotoUrl(int $doctorId): string
     {
         $path = public_path("storage/doctors/{$doctorId}.jpg");
@@ -430,6 +466,9 @@ final class DoctorsController extends Controller
         return "/storage/doctors/{$doctorId}.jpg?v=".filemtime($path);
     }
 
+    /**
+     * Store an uploaded doctor photo as the profile image.
+     */
     private function saveDoctorPhoto(Doctor $doctor, UploadedFile $photo): void
     {
         $targetDirectory = public_path('storage/doctors');
@@ -442,6 +481,9 @@ final class DoctorsController extends Controller
         $this->saveUploadedDoctorPhotoAsJpeg($photo, $targetPath);
     }
 
+    /**
+     * Convert a supported uploaded image to a JPEG file at the target path.
+     */
     private function saveUploadedDoctorPhotoAsJpeg(UploadedFile $photo, string $targetPath): void
     {
         $sourcePath = $photo->getRealPath();

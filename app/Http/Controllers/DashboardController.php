@@ -13,6 +13,9 @@ use Inertia\Response;
 
 final class DashboardController extends Controller
 {
+    /**
+     * Render the dashboard that matches the authenticated user's highest-priority role.
+     */
     public function index(Request $request): Response
     {
         $user = $request->user();
@@ -37,6 +40,9 @@ final class DashboardController extends Controller
         return Inertia::render('Dashboard', ['dashboard_type' => 'default']);
     }
 
+    /**
+     * Render aggregate administrative dashboard statistics.
+     */
     private function adminDashboard(): Response
     {
         $tz = config('app.timezone', 'Europe/Sofia');
@@ -58,6 +64,9 @@ final class DashboardController extends Controller
         ]);
     }
 
+    /**
+     * Render the patient dashboard with past, current, and future appointments.
+     */
     private function patientDashboard(int $userId): Response
     {
         $patient = DB::table('patients')
@@ -152,6 +161,9 @@ final class DashboardController extends Controller
         ]);
     }
 
+    /**
+     * Render the doctor dashboard for today's appointments.
+     */
     private function doctorDashboard(int $userId): Response
     {
         $doctor = DB::table('doctors')
